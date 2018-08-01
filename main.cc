@@ -8,16 +8,29 @@
 #include "sphere.hh"
 #include "vec3.hh"
 
+static const vec3 ones(1.0f, 1.0f, 1.0f);
+
+std::random_device rd;
+std::mt19937 rng(rd());
+std::uniform_real_distribution<float> r01(0.0f, 1.0f);
+
+vec3 random_in_unit_sphere() {
+    vec3 p;
+    do {
+        p = 2.0f * vec3(r01(rng), r01(rng), r01(rng)) - ones;
+    } while (p.squared_length() >= 1.0f);
+    return p;
+}
+
 vec3 color(const ray& r, hitable *world) {
     hit_record rec;
-    if (world->hit(r, 0.0f, std::numeric_limits<float>::max(), rec)) {
-        return 0.5f * vec3(rec.normal.x() + 1.0f,
-                           rec.normal.y() + 1.0f,
-                           rec.normal.z() + 1.0f);
+    if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec)) {
+        vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5f * color(ray(rec.p, target - rec.p), world);
     } else {
         vec3 unit_direction = unit_vector(r.direction());
         float t = 0.5f * (unit_direction.y() + 1.0f);
-        return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
+        return (1.0f - t) * ones + t * vec3(0.5f, 0.7f, 1.0f);
     }
 }
 
@@ -35,10 +48,6 @@ int main() {
 
     camera cam;
 
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_real_distribution<float> r01(0.0f, 1.0f);
-
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
             vec3 col(0.0f, 0.0f, 0.0f);
@@ -51,7 +60,7 @@ int main() {
                 col += color(r, world);
             }
             col /= float(ns);
-
+            col = vec3(sqrtf(col[0]), sqrtf(col[1]), sqrtf(col[2]));
             int ir = int(255.99f * col[0]);
             int ig = int(255.99f * col[1]);
             int ib = int(255.99f * col[2]);
