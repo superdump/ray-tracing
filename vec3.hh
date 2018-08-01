@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "rng.hh"
+
 class vec3 {
 public:
     float e[3];
@@ -35,6 +37,9 @@ public:
     inline float length() const { return sqrtf(squared_length()); }
     inline void make_unit_vector();
 };
+
+static const vec3 zeros(0.0f, 0.0f, 0.0f);
+static const vec3 ones(1.0f, 1.0f, 1.0f);
 
 inline std::istream& operator>>(std::istream &is, vec3 &t) {
     is >> t.e[0] >> t.e[1] >> t.e[2];
@@ -132,6 +137,18 @@ inline vec3& vec3::operator/=(const float t) {
 
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
+}
+
+vec3 random_in_unit_sphere() {
+    vec3 p;
+    do {
+        p = 2.0f * vec3(r01(rng), r01(rng), r01(rng)) - ones;
+    } while (p.squared_length() >= 1.0f);
+    return p;
+}
+
+vec3 reflect(const vec3& v, const vec3& n) {
+    return v - 2.0f * dot(v, n) * n;
 }
 
 #endif /* VEC3_HH */
