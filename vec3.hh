@@ -78,6 +78,10 @@ inline vec3 operator*(const float t, const vec3 &v1) {
     return vec3(t * v1.e[0], t * v1.e[1], t * v1.e[2]);
 }
 
+inline vec3 operator*(const vec3 &v1, const float t) {
+    return vec3(t * v1.e[0], t * v1.e[1], t * v1.e[2]);
+}
+
 inline vec3 operator/(const vec3 &v1, const float t) {
     return (1.0f / t) * v1;
 }
@@ -149,6 +153,17 @@ vec3 random_in_unit_sphere() {
 
 vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2.0f * dot(v, n) * n;
+}
+
+bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted) {
+    vec3 uv = unit_vector(v);
+    float dt = dot(uv, n);
+    float discriminant = 1.0f - ni_over_nt * ni_over_nt * (1.0f - dt * dt);
+    if (discriminant > 0.0f) {
+        refracted = ni_over_nt * (uv - n * dt) - n * sqrtf(discriminant);
+        return true;
+    }
+    return false;
 }
 
 #endif /* VEC3_HH */
