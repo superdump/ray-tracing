@@ -1,9 +1,9 @@
+#ifndef VEC3_HH
+#define VEC3_HH
+
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
-
-#ifndef VEC3_HH
-#define VEC3_HH
 
 class vec3 {
 public:
