@@ -1,6 +1,8 @@
 #include <iostream>
 #include <limits>
+#include <random>
 
+#include "camera.hh"
 #include "hitable_list.hh"
 #include "ray.hh"
 #include "sphere.hh"
@@ -22,27 +24,33 @@ vec3 color(const ray& r, hitable *world) {
 int main() {
     int nx = 200;
     int ny = 100;
+    int ns = 100;
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
-
-    vec3 lower_left_corner(-2.0f, -1.0f, -1.0f);
-    vec3 horizontal(4.0f, 0.0f, 0.0f);
-    vec3 vertical(0.0f, 2.0f, 0.0f);
-    vec3 origin(0.0f, 0.0f, 0.0f);
 
     hitable *list[2];
     list[0] = new sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f);
     list[1] = new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f);
     hitable *world = new hitable_list(list, 2);
 
+    camera cam;
+
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::uniform_real_distribution<float> r01(0.0f, 1.0f);
+
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
-            float u = float(i) / float(nx);
-            float v = float(j) / float(ny);
-            ray r(origin, lower_left_corner + u * horizontal + v * vertical);
+            vec3 col(0.0f, 0.0f, 0.0f);
 
-            // vec3 p = r.point_at_parameter(2.0f);
-            vec3 col = color(r, world);
+            for (int s = 0; s < ns; ++s) {
+                float u = float(i + r01(rng)) / float(nx);
+                float v = float(j + r01(rng)) / float(ny);
+                ray r = cam.get_ray(u, v);
+                vec3 p = r.point_at_parameter(2.0f);
+                col += color(r, world);
+            }
+            col /= float(ns);
 
             int ir = int(255.99f * col[0]);
             int ig = int(255.99f * col[1]);
