@@ -254,8 +254,11 @@ int main() {
             col /= float(ns);
             col = vec3(sqrtf(col[0]), sqrtf(col[1]), sqrtf(col[2]));
             int ir = int(255.99f * col[0]);
+            ir = ir > 255 ? 255 : ir;
             int ig = int(255.99f * col[1]);
+            ig = ig > 255 ? 255 : ig;
             int ib = int(255.99f * col[2]);
+            ib = ib > 255 ? 255 : ib;
 
             std::cout << ir << " " << ig << " " << ib << "\n";
         }
