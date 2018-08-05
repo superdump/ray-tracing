@@ -187,6 +187,10 @@ int main() {
                aperture, dist_to_focus,
                0.0f, 1.0f);
 
+    float progress = 0.0;
+    time_t timer = time(NULL);
+    int barWidth = 70;
+
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
             vec3 col(0.0f, 0.0f, 0.0f);
@@ -206,5 +210,24 @@ int main() {
 
             std::cout << ir << " " << ig << " " << ib << "\n";
         }
+        progress = double(ny - 1 - j) / double(ny);
+        std::cerr << "[";
+        int pos = barWidth * progress;
+        for (int b = 0; b < barWidth; ++b) {
+            if (b < pos)
+                std::cerr << "=";
+            else if (b == pos)
+                std::cerr << ">";
+            else
+                std::cerr << " ";
+        }
+        std::cerr << "] " << int(progress * 100.0) << " %";
+
+        double elapsed = difftime(time(NULL), timer);
+        double remaining = (elapsed / progress) * (1.0 - progress);
+        std::cerr << " e: " << int(elapsed) << "s - r: " << int(remaining) << "s - t: " << int(elapsed + remaining) << "s";
+        std::cerr << "\r";
+        std::cerr.flush();
     }
+    std::cerr << std::endl;
 }
