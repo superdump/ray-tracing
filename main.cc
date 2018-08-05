@@ -5,6 +5,7 @@
 #include "stb_image.h"
 
 #include "aabb.hh"
+#include "box.hh"
 #include "bvh_node.hh"
 #include "camera.hh"
 #include "hitable_list.hh"
@@ -12,7 +13,9 @@
 #include "moving_sphere.hh"
 #include "ray.hh"
 #include "rng.hh"
+#include "rotate.hh"
 #include "sphere.hh"
+#include "translate.hh"
 #include "vec3.hh"
 #include "rect.hh"
 
@@ -114,7 +117,7 @@ hitable *simple_light() {
 }
 
 hitable *cornell_box() {
-    hitable **list = new hitable*[6];
+    hitable **list = new hitable*[8];
 
     material *red = new lambertian(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
     material *white = new lambertian(new constant_texture(vec3(0.73f, 0.73f, 0.73f)));
@@ -128,14 +131,16 @@ hitable *cornell_box() {
     list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
     list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
     list[i++] = new flip_normals(new xy_rect(0, 555, 0, 555, 555, white));
+    list[i++] = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 165.0f, 165.0f), white), -18.0f), vec3(130.0f, 0.0f, 65.0f));
+    list[i++] = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 330.0f, 165.0f), white), 15.0f), vec3(265.0f, 0.0f, 295.0f));
 
     return new hitable_list(list, i);
 }
 
 int main() {
-    int nx = 1280;
-    int ny = 720;
-    int ns = 100;
+    int nx = 400;
+    int ny = 400;
+    int ns = 400;
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
 
