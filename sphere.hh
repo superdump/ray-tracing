@@ -7,6 +7,13 @@
 #include "ray.hh"
 #include "vec3.hh"
 
+void get_sphere_uv(const vec3& p, float& u, float& v) {
+    float phi = atan2f(p.z(), p.x());
+    float theta = asinf(p.y());
+    u = 1.0f - (phi + M_PI) / (2.0f * M_PI);
+    v = (theta + M_PI_2) / M_PI;
+}
+
 class sphere : public hitable {
 public:
     vec3 center;
@@ -34,6 +41,7 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const 
             rec.p = r.point_at_parameter(rec.t);
             rec.normal = (rec.p - center) / radius;
             rec.mat_ptr = mat_ptr;
+            get_sphere_uv(rec.normal, rec.u, rec.v);
             return true;
         }
         temp = (-b + discriminantSqrt) / a;
@@ -42,6 +50,7 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const 
             rec.p = r.point_at_parameter(rec.t);
             rec.normal = (rec.p - center) / radius;
             rec.mat_ptr = mat_ptr;
+            get_sphere_uv(rec.normal, rec.u, rec.v);
             return true;
         }
     }

@@ -1,6 +1,9 @@
 #include <iostream>
 #include <limits>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "aabb.hh"
 #include "bvh_node.hh"
 #include "camera.hh"
@@ -90,6 +93,16 @@ hitable *two_perlin_spheres() {
     return new hitable_list(list, 2);
 }
 
+hitable *earth_sphere() {
+    int nx, ny, nn;
+    unsigned char *tex_data = stbi_load("world.topo.bathy.200412.3x5400x2700.jpg", &nx, &ny, &nn, 0);
+    material *mat = new lambertian(new image_texture(tex_data, nx, ny));
+    int n = 50;
+    hitable** list = new hitable*[n + 1];
+    list[0] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, mat);
+    return new hitable_list(list, 1);
+}
+
 int main() {
     int nx = 1280;
     int ny = 720;
@@ -99,7 +112,8 @@ int main() {
 
     // hitable *world = random_scene();
     // hitable *world = two_spheres();
-    hitable *world = two_perlin_spheres();
+    // hitable *world = two_perlin_spheres();
+    hitable *world = earth_sphere();
 
     vec3 lookfrom(13.0f, 2.0f, 3.0f);
     vec3 lookat(0.0f, 0.0f, 0.0f);
