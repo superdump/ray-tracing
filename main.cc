@@ -4,6 +4,7 @@
 #include "camera.hh"
 #include "hitable_list.hh"
 #include "material.hh"
+#include "moving_sphere.hh"
 #include "ray.hh"
 #include "rng.hh"
 #include "sphere.hh"
@@ -37,7 +38,7 @@ hitable *random_scene() {
             vec3 center(a + 0.9f * r01(rng), 0.2f, b + 0.9f * r01(rng));
             if ((center - vec3(4.0f, 0.2f, 0.0f)).length() > 0.9f) {
                 if (choose_mat < 0.8f) { // diffuse
-                    list[i++] = new sphere(center, 0.2f,
+                    list[i++] = new moving_sphere(center, center + vec3(0.0f, 0.5f * r01(rng), 0.0f), 0.0, 1.0, 0.2f,
                         new lambertian(vec3(r01(rng) * r01(rng),
                                             r01(rng) * r01(rng),
                                             r01(rng) * r01(rng))));
@@ -62,8 +63,8 @@ hitable *random_scene() {
 }
 
 int main() {
-    int nx = 1200;
-    int ny = 800;
+    int nx = 400;
+    int ny = 200;
     int ns = 10;
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
@@ -77,7 +78,8 @@ int main() {
     camera cam(lookfrom, lookat,
                vec3(0.0f, 1.0f, 0.0f),
                20.0f, float(nx) / float(ny),
-               aperture, dist_to_focus);
+               aperture, dist_to_focus,
+               0.0f, 1.0f);
 
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
