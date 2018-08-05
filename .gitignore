@@ -1,4 +1,6 @@
+.DS_Store
 *.ppm
 *.png
 a.out
+a.out.dSYM/
 .vscode/
