@@ -1,6 +1,8 @@
 #include <iostream>
 #include <limits>
 
+#include "aabb.hh"
+#include "bvh_node.hh"
 #include "camera.hh"
 #include "hitable_list.hh"
 #include "material.hh"

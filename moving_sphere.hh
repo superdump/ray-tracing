@@ -21,6 +21,7 @@ public:
                       radius(r), mat_ptr(m) {}
 
     virtual bool hit(const ray& r, float tmin, float tmax, hit_record& rec) const;
+    virtual bool bounding_box(float t0, float t1, aabb &box) const;
     vec3 center(float t) const;
 };
 
@@ -54,6 +55,16 @@ bool moving_sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec)
         }
     }
     return false;
+}
+
+bool moving_sphere::bounding_box(float t0, float t1, aabb &box) const {
+    vec3 half_diagonal(radius, radius, radius);
+    vec3 c0 = center(t0);
+    vec3 c1 = center(t1);
+    aabb box0(c0 - half_diagonal, c0 + half_diagonal);
+    aabb box1(c1 - half_diagonal, c1 + half_diagonal);
+    box = surrounding_box(box0, box1);
+    return true;
 }
 
 #endif /* MOVING_SPHERE_HH */
