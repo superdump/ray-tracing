@@ -14,21 +14,21 @@
 #include "rng.hh"
 #include "sphere.hh"
 #include "vec3.hh"
+#include "rect.hh"
 
 vec3 color(const ray& r, hitable *world, int depth) {
     hit_record rec;
     if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec)) {
         ray scattered;
         vec3 attenuation;
+        vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
         if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-            return attenuation * color(scattered, world, depth + 1);
+            return emitted + attenuation * color(scattered, world, depth + 1);
         } else {
-            return zeros;
+            return emitted;
         }
     } else {
-        vec3 unit_direction = unit_vector(r.direction());
-        float t = 0.5f * (unit_direction.y() + 1.0f);
-        return (1.0f - t) * ones + t * vec3(0.5f, 0.7f, 1.0f);
+        return zeros;
     }
 }
 
@@ -103,25 +103,57 @@ hitable *earth_sphere() {
     return new hitable_list(list, 1);
 }
 
+hitable *simple_light() {
+    texture *pertext = new noise_texture(4.0f);
+    hitable **list = new hitable*[4];
+    list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambertian(pertext));
+    list[1] = new sphere(vec3(0, 2, 0), 2, new lambertian(pertext));
+    list[2] = new sphere(vec3(0, 6, 0), 1, new diffuse_light(new constant_texture(vec3(4,4,4))));
+    list[3] = new xy_rect(3, 5, 1, 3, -2, new diffuse_light(new constant_texture(vec3(4,4,4))));
+    return new hitable_list(list, 4);
+}
+
+hitable *cornell_box() {
+    hitable **list = new hitable*[6];
+
+    material *red = new lambertian(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
+    material *white = new lambertian(new constant_texture(vec3(0.73f, 0.73f, 0.73f)));
+    material *green = new lambertian(new constant_texture(vec3(0.12f, 0.45f, 0.15f)));
+    material *light = new diffuse_light(new constant_texture(vec3(15.0f, 15.0f, 15.0f)));
+
+    int i = 0;
+    list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
+    list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
+    list[i++] = new xz_rect(213, 343, 227, 332, 554, light);
+    list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
+    list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
+    list[i++] = new flip_normals(new xy_rect(0, 555, 0, 555, 555, white));
+
+    return new hitable_list(list, i);
+}
+
 int main() {
     int nx = 1280;
     int ny = 720;
-    int ns = 25;
+    int ns = 100;
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
 
     // hitable *world = random_scene();
     // hitable *world = two_spheres();
     // hitable *world = two_perlin_spheres();
-    hitable *world = earth_sphere();
+    // hitable *world = earth_sphere();
+    // hitable *world = simple_light();
+    hitable *world = cornell_box();
 
-    vec3 lookfrom(13.0f, 2.0f, 3.0f);
-    vec3 lookat(0.0f, 0.0f, 0.0f);
+    vec3 lookfrom(278.0f, 278.0f, -800.0f);
+    vec3 lookat(278.0f, 278.0f, 0.0f);
     float dist_to_focus = 10.0f;
     float aperture = 0.0f;
+    float vfov = 40.0f;
     camera cam(lookfrom, lookat,
                vec3(0.0f, 1.0f, 0.0f),
-               20.0f, float(nx) / float(ny),
+               vfov, float(nx) / float(ny),
                aperture, dist_to_focus,
                0.0f, 1.0f);
 
