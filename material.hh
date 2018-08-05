@@ -3,6 +3,7 @@
 
 #include "hitable.hh"
 #include "ray.hh"
+#include "texture.hh"
 #include "vec3.hh"
 
 class material {
@@ -15,9 +16,9 @@ public:
 
 class lambertian : public material {
 public:
-    vec3 albedo;
+    texture *albedo;
 
-    lambertian(const vec3& a) : albedo(a) {}
+    lambertian(texture *a) : albedo(a) {}
 
     virtual bool scatter(const ray& r_in,
                          const hit_record& rec,
@@ -25,7 +26,7 @@ public:
                          ray& scattered) const {
         vec3 target = rec.p + rec.normal + random_in_unit_sphere();
         scattered = ray(rec.p, target - rec.p, r_in.time());
-        attenuation = albedo;
+        attenuation = albedo->value(0.0f, 0.0f, rec.p);
         return true;
     }
 };
