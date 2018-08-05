@@ -277,7 +277,14 @@ int main() {
 
         double elapsed = difftime(time(NULL), timer);
         double remaining = (elapsed / progress) * (1.0 - progress);
-        std::cerr << " e: " << int(elapsed) << "s - r: " << int(remaining) << "s - t: " << int(elapsed + remaining) << "s";
+        int ela_mins = elapsed / 60.0;
+        int ela_secs = elapsed - (ela_mins * 60.0);
+        int rem_mins = remaining / 60.0;
+        int rem_secs = remaining - (rem_mins * 60.0);
+        double total = elapsed + remaining;
+        int tot_mins = total / 60.0;
+        int tot_secs = total - (tot_mins * 60.0);
+        std::cerr << " e: " << ela_mins << "m" << ela_secs << "s - r: " << rem_mins << "m" << rem_secs << "s - t: " << tot_mins << "m" << tot_secs << "s";
         std::cerr << "\r";
         std::cerr.flush();
     }
