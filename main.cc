@@ -17,6 +17,7 @@
 #include "sphere.hh"
 #include "translate.hh"
 #include "vec3.hh"
+#include "volumes.hh"
 #include "rect.hh"
 
 vec3 color(const ray& r, hitable *world, int depth) {
@@ -137,10 +138,33 @@ hitable *cornell_box() {
     return new hitable_list(list, i);
 }
 
+hitable *cornell_smoke() {
+    hitable **list = new hitable*[8];
+
+    material *red = new lambertian(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
+    material *white = new lambertian(new constant_texture(vec3(0.73f, 0.73f, 0.73f)));
+    material *green = new lambertian(new constant_texture(vec3(0.12f, 0.45f, 0.15f)));
+    material *light = new diffuse_light(new constant_texture(vec3(7.0f, 7.0f, 7.0f)));
+
+    int i = 0;
+    list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
+    list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
+    list[i++] = new xz_rect(113, 443, 127, 432, 554, light);
+    list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
+    list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
+    list[i++] = new flip_normals(new xy_rect(0, 555, 0, 555, 555, white));
+    hitable *b1 = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 165.0f, 165.0f), white), -18.0f), vec3(130.0f, 0.0f, 65.0f));
+    hitable *b2 = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 330.0f, 165.0f), white), 15.0f), vec3(265.0f, 0.0f, 295.0f));
+    list[i++] = new constant_medium(b1, 0.01f, new constant_texture(vec3(1.0f, 1.0f, 1.0f)));
+    list[i++] = new constant_medium(b2, 0.01f, new constant_texture(vec3(0.0f, 0.0f, 0.0f)));
+
+    return new hitable_list(list, i);
+}
+
 int main() {
-    int nx = 400;
-    int ny = 400;
-    int ns = 400;
+    int nx = 800;
+    int ny = 800;
+    int ns = 1000;
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
 
@@ -149,7 +173,8 @@ int main() {
     // hitable *world = two_perlin_spheres();
     // hitable *world = earth_sphere();
     // hitable *world = simple_light();
-    hitable *world = cornell_box();
+    // hitable *world = cornell_box();
+    hitable *world = cornell_smoke();
 
     vec3 lookfrom(278.0f, 278.0f, -800.0f);
     vec3 lookat(278.0f, 278.0f, 0.0f);
