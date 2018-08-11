@@ -286,7 +286,9 @@ int main() {
         double total = elapsed + remaining;
         int tot_mins = total / 60.0;
         int tot_secs = total - (tot_mins * 60.0);
-        std::cerr << " e: " << ela_mins << "m" << ela_secs << "s - r: " << rem_mins << "m" << rem_secs << "s - t: " << tot_mins << "m" << tot_secs << "s";
+        if (ela_mins >= 0 && ela_secs >= 0 && rem_mins >= 0 && rem_secs >= 0 && tot_mins >= 0 && tot_secs >= 0) {
+            std::cerr << " e: " << ela_mins << "m" << ela_secs << "s - r: " << rem_mins << "m" << rem_secs << "s - t: " << tot_mins << "m" << tot_secs << "s";
+        }
         std::cerr << "\r";
         std::cerr.flush();
     }
