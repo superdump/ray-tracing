@@ -20,13 +20,16 @@
 #include "volumes.hh"
 #include "rect.hh"
 
+const int RAYS_PER_PIXEL = 4;
+const int BOUNCES_PER_RAY = 6;
+
 vec3 color(const ray& r, hitable *world, int depth) {
     hit_record rec;
     if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec)) {
         ray scattered;
         vec3 attenuation;
         vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-        if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
+        if (depth < BOUNCES_PER_RAY && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
             return emitted + attenuation * color(scattered, world, depth + 1);
         } else {
             return emitted;
@@ -201,8 +204,7 @@ hitable *final() {
     texture *pertext = new noise_texture(0.1);
     list[l++] = new sphere(vec3(220, 280, 300), 80, new lambertian(pertext));
     int ns = 1000;
-    for (int j = 0; j < ns; j++)
-    {
+    for (int j = 0; j < ns; j++) {
         boxlist2[j] = new sphere(vec3(165 * r01(rng), 165 * r01(rng), 165 * r01(rng)), 10, white);
     }
     list[l++] = new translate(new rotate_y(new bvh_node(boxlist2, ns, 0.0, 1.0), 15), vec3(-100, 270, 395));
@@ -212,7 +214,7 @@ hitable *final() {
 int main() {
     int nx = 800;
     int ny = 800;
-    int ns = 1000;
+    int ns = RAYS_PER_PIXEL;
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
 
