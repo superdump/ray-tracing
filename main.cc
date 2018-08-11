@@ -198,7 +198,7 @@ hitable *final() {
     boundary = new sphere(vec3(0, 0, 0), 5000, new dielectric(1.5));
     list[l++] = new constant_medium(boundary, 0.0001, new constant_texture(vec3(1.0, 1.0, 1.0)));
     int nx, ny, nn;
-    unsigned char *tex_data = stbi_load("earthmap.jpg", &nx, &ny, &nn, 0);
+    unsigned char *tex_data = stbi_load("world.topo.bathy.200412.3x5400x2700.jpg", &nx, &ny, &nn, 0);
     material *emat = new lambertian(new image_texture(tex_data, nx, ny));
     list[l++] = new sphere(vec3(400, 200, 400), 100, emat);
     texture *pertext = new noise_texture(0.1);
