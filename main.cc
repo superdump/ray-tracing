@@ -227,7 +227,7 @@ int main() {
     // hitable *world = cornell_smoke();
     hitable *world = final();
 
-    vec3 lookfrom(278.0f, 278.0f, -800.0f);
+    vec3 lookfrom(478.0f, 278.0f, -600.0f);
     vec3 lookat(278.0f, 278.0f, 0.0f);
     float dist_to_focus = 10.0f;
     float aperture = 0.0f;
