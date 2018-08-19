@@ -289,7 +289,8 @@ int main() {
         int tot_mins = total / 60.0;
         int tot_secs = total - (tot_mins * 60.0);
         if (ela_mins >= 0 && ela_secs >= 0 && rem_mins >= 0 && rem_secs >= 0 && tot_mins >= 0 && tot_secs >= 0) {
-            std::cerr << " e: " << ela_mins << "m" << ela_secs << "s - r: " << rem_mins << "m" << rem_secs << "s - t: " << tot_mins << "m" << tot_secs << "s";
+            double mrays_per_sec = double(nx * ny * RAYS_PER_PIXEL * BOUNCES_PER_RAY * 2) / (1000000.0 * total);
+            std::cerr << " Mrays/s: " << mrays_per_sec << " - e: " << ela_mins << "m" << ela_secs << "s - r: " << rem_mins << "m" << rem_secs << "s - t: " << tot_mins << "m" << tot_secs << "s";
         }
         std::cerr << "\r";
         std::cerr.flush();
