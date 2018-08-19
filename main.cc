@@ -20,6 +20,8 @@
 #include "volumes.hh"
 #include "rect.hh"
 
+const int WIDTH = 800;
+const int HEIGHT = 800;
 const int RAYS_PER_PIXEL = 4;
 const int BOUNCES_PER_RAY = 6;
 
@@ -212,8 +214,8 @@ hitable *final() {
 }
 
 int main() {
-    int nx = 800;
-    int ny = 800;
+    int nx = WIDTH;
+    int ny = HEIGHT;
     int ns = RAYS_PER_PIXEL;
 
     std::cout << "P3\n" << nx << " " << ny << "\n255\n";
