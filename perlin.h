@@ -39,11 +39,6 @@ inline float perlin_interp(vec3 c[2][2][2], float u, float v, float w) {
 
 class perlin {
 public:
-    static vec3 *ranvec;
-    static int *perm_x;
-    static int *perm_y;
-    static int *perm_z;
-
     float noise(const vec3& p) const {
         float u = p.x() - floor(p.x());
         float v = p.y() - floor(p.y());
@@ -73,6 +68,11 @@ public:
         }
         return fabs(accum);
     }
+
+    static vec3 *ranvec;
+    static int *perm_x;
+    static int *perm_y;
+    static int *perm_z;
 };
 
 static vec3 *perlin_generate() {

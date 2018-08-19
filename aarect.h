@@ -1,5 +1,5 @@
-#ifndef XY_RECTH
-#define XY_RECTH
+#ifndef AARECTH
+#define AARECTH
 
 #include "aabb.h"
 #include "hitable.h"
@@ -8,9 +8,6 @@
 
 class xy_rect : public hitable {
 public:
-    material *mat_ptr;
-    float x0, x1, y0, y1, k;
-
     xy_rect() {}
     xy_rect(float _x0, float _x1, float _y0, float _y1, float _k, material *mat)
         : mat_ptr(mat), x0(_x0), x1(_x1), y0(_y0), y1(_y1), k(_k) {}
@@ -20,6 +17,9 @@ public:
         box = aabb(vec3(x0, y0, k - 0.0001f), vec3(x1, y1, k + 0.0001f));
         return true;
     }
+
+    material *mat_ptr;
+    float x0, x1, y0, y1, k;
 };
 
 bool xy_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
@@ -43,9 +43,6 @@ bool xy_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
 
 class xz_rect : public hitable {
 public:
-    material *mat_ptr;
-    float x0, x1, z0, z1, k;
-
     xz_rect() {}
     xz_rect(float _x0, float _x1, float _z0, float _z1, float _k, material *mat)
         : mat_ptr(mat), x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k) {}
@@ -55,6 +52,9 @@ public:
         box = aabb(vec3(x0, k - 0.0001f, z0), vec3(x1, k + 0.0001f, z1));
         return true;
     }
+
+    material *mat_ptr;
+    float x0, x1, z0, z1, k;
 };
 
 bool xz_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
@@ -78,9 +78,6 @@ bool xz_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
 
 class yz_rect : public hitable {
 public:
-    material *mat_ptr;
-    float y0, y1, z0, z1, k;
-
     yz_rect() {}
     yz_rect(float _y0, float _y1, float _z0, float _z1, float _k, material *mat)
         : mat_ptr(mat), y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k) {}
@@ -90,6 +87,9 @@ public:
         box = aabb(vec3(k - 0.0001f, y0, z0), vec3(k + 0.0001f, y1, z1));
         return true;
     }
+
+    material *mat_ptr;
+    float y0, y1, z0, z1, k;
 };
 
 bool yz_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
@@ -111,4 +111,4 @@ bool yz_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
     return true;
 }
 
-#endif /* XY_RECTH */
+#endif /* AARECTH */

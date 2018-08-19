@@ -6,16 +6,16 @@
 #include "ray.h"
 #include "vec3.h"
 
+vec3 random_in_unit_disc() {
+    vec3 p;
+    do {
+        p = 2.0f * vec3(r01(rng), r01(rng), 0.0f) - vec3(1.0f, 1.0f, 0.0f);
+    } while (dot(p, p) >= 1.0f);
+    return p;
+}
+
 class camera {
 public:
-    vec3 origin;
-    vec3 lower_left_corner;
-    vec3 horizontal;
-    vec3 vertical;
-    vec3 u, v, w;
-    float lens_radius;
-    float time0, time1;
-
     // vfov is top to bottom in degrees
     camera(vec3 lookfrom, vec3 lookat, vec3 vup,
            float vfov, float aspect,
@@ -52,6 +52,14 @@ public:
                    - offset,
                    time);
     }
+
+    vec3 origin;
+    vec3 lower_left_corner;
+    vec3 horizontal;
+    vec3 vertical;
+    vec3 u, v, w;
+    float lens_radius;
+    float time0, time1;
 };
 
 #endif /* CAMERAH */

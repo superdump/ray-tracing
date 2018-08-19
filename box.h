@@ -2,17 +2,14 @@
 #define BOXH
 
 #include "aabb.h"
+#include "aarect.h"
 #include "hitable.h"
 #include "hitable_list.h"
 #include "ray.h"
-#include "rect.h"
 #include "vec3.h"
 
 class box : public hitable {
 public:
-    vec3 pmin, pmax;
-    hitable *list_ptr;
-
     box() {}
     box(const vec3 &p0, const vec3 &p1, material *ptr);
 
@@ -21,6 +18,9 @@ public:
         box = aabb(pmin, pmax);
         return true;
     }
+
+    vec3 pmin, pmax;
+    hitable *list_ptr;
 };
 
 box::box(const vec3 &p0, const vec3 &p1, material *ptr) {

@@ -9,8 +9,6 @@
 
 class vec3 {
 public:
-    float e[3];
-
     vec3() {}
     vec3(float e0, float e1, float e2) { e[0] = e0;  e[1] = e1;  e[2] = e2; }
 
@@ -36,6 +34,8 @@ public:
     inline float squared_length() const { return e[0] * e[0] + e[1] * e[1] + e[2] * e[2]; }
     inline float length() const { return sqrtf(squared_length()); }
     inline void make_unit_vector();
+
+    float e[3];
 };
 
 static const vec3 zeros(0.0f, 0.0f, 0.0f);
@@ -141,37 +141,6 @@ inline vec3& vec3::operator/=(const float t) {
 
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
-}
-
-vec3 random_in_unit_sphere() {
-    vec3 p;
-    do {
-        p = 2.0f * vec3(r01(rng), r01(rng), r01(rng)) - ones;
-    } while (p.squared_length() >= 1.0f);
-    return p;
-}
-
-vec3 random_in_unit_disc() {
-    vec3 p;
-    do {
-        p = 2.0f * vec3(r01(rng), r01(rng), 0.0f) - vec3(1.0f, 1.0f, 0.0f);
-    } while (dot(p, p) >= 1.0f);
-    return p;
-}
-
-vec3 reflect(const vec3& v, const vec3& n) {
-    return v - 2.0f * dot(v, n) * n;
-}
-
-bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted) {
-    vec3 uv = unit_vector(v);
-    float dt = dot(uv, n);
-    float discriminant = 1.0f - ni_over_nt * ni_over_nt * (1.0f - dt * dt);
-    if (discriminant > 0.0f) {
-        refracted = ni_over_nt * (uv - n * dt) - n * sqrtf(discriminant);
-        return true;
-    }
-    return false;
 }
 
 #endif /* VEC3H */
