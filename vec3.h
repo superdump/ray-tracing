@@ -1,11 +1,11 @@
-#ifndef VEC3_HH
-#define VEC3_HH
+#ifndef VEC3H
+#define VEC3H
 
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
 
-#include "rng.hh"
+#include "rng.h"
 
 class vec3 {
 public:
@@ -174,4 +174,4 @@ bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& refracted) {
     return false;
 }
 
-#endif /* VEC3_HH */
+#endif /* VEC3H */

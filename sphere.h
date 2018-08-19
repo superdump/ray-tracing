@@ -1,11 +1,11 @@
-#ifndef SPHERE_HH
-#define SPHERE_HH
+#ifndef SPHEREH
+#define SPHEREH
 
-#include "aabb.hh"
-#include "hitable.hh"
-#include "material.hh"
-#include "ray.hh"
-#include "vec3.hh"
+#include "aabb.h"
+#include "hitable.h"
+#include "material.h"
+#include "ray.h"
+#include "vec3.h"
 
 void get_sphere_uv(const vec3& p, float& u, float& v) {
     float phi = atan2f(p.z(), p.x());
@@ -63,4 +63,4 @@ bool sphere::bounding_box(float t0, float t1, aabb &box) const {
     return true;
 }
 
-#endif /* SPHERE_HH */
+#endif /* SPHEREH */

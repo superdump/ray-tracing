@@ -1,10 +1,10 @@
-#ifndef CAMERA_HH
-#define CAMERA_HH
+#ifndef CAMERAH
+#define CAMERAH
 
 #include <cmath>
 
-#include "ray.hh"
-#include "vec3.hh"
+#include "ray.h"
+#include "vec3.h"
 
 class camera {
 public:
@@ -54,4 +54,4 @@ public:
     }
 };
 
-#endif /* CAMERA_HH */
+#endif /* CAMERAH */

@@ -1,7 +1,7 @@
-#ifndef HITABLE_LIST_HH
-#define HITABLE_LIST_HH
+#ifndef HITABLE_LISTH
+#define HITABLE_LISTH
 
-#include "hitable.hh"
+#include "hitable.h"
 
 class hitable_list: public hitable {
 public:
@@ -46,7 +46,7 @@ bool hitable_list::bounding_box(float t0, float t1, aabb &box) const {
             return false;
         }
     }
-    return true;    
+    return true;
 }
 
-#endif /* HITABLE_LIST_HH */
+#endif /* HITABLE_LISTH */

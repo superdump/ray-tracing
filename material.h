@@ -1,10 +1,10 @@
-#ifndef MATERIAL_HH
-#define MATERIAL_HH
+#ifndef MATERIALH
+#define MATERIALH
 
-#include "hitable.hh"
-#include "ray.hh"
-#include "texture.hh"
-#include "vec3.hh"
+#include "hitable.h"
+#include "ray.h"
+#include "texture.h"
+#include "vec3.h"
 
 class material {
 public:
@@ -129,4 +129,4 @@ public:
     }
 };
 
-#endif /* MATERIAL_HH */
+#endif /* MATERIALH */

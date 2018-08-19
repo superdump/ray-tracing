@@ -1,12 +1,12 @@
-#ifndef BOX_HH
-#define BOX_HH
+#ifndef BOXH
+#define BOXH
 
-#include "aabb.hh"
-#include "hitable.hh"
-#include "hitable_list.hh"
-#include "ray.hh"
-#include "rect.hh"
-#include "vec3.hh"
+#include "aabb.h"
+#include "hitable.h"
+#include "hitable_list.h"
+#include "ray.h"
+#include "rect.h"
+#include "vec3.h"
 
 class box : public hitable {
 public:
@@ -40,4 +40,4 @@ bool box::hit(const ray& r, float t0, float t1, hit_record& rec) const {
     return list_ptr->hit(r, t0, t1, rec);
 }
 
-#endif /* BOX_HH */
+#endif /* BOXH */

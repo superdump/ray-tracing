@@ -1,11 +1,11 @@
-#ifndef MOVING_SPHERE_HH
-#define MOVING_SPHERE_HH
+#ifndef MOVING_SPHEREH
+#define MOVING_SPHEREH
 
-#include "hitable.hh"
-#include "material.hh"
-#include "ray.hh"
-#include "sphere.hh"
-#include "vec3.hh"
+#include "hitable.h"
+#include "material.h"
+#include "ray.h"
+#include "sphere.h"
+#include "vec3.h"
 
 class moving_sphere : public hitable {
 public:
@@ -70,4 +70,4 @@ bool moving_sphere::bounding_box(float t0, float t1, aabb &box) const {
     return true;
 }
 
-#endif /* MOVING_SPHERE_HH */
+#endif /* MOVING_SPHEREH */

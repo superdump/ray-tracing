@@ -1,8 +1,8 @@
-#ifndef TEXTURE_HH
-#define TEXTURE_HH
+#ifndef TEXTUREH
+#define TEXTUREH
 
-#include "perlin.hh"
-#include "vec3.hh"
+#include "perlin.h"
+#include "vec3.h"
 
 class texture {
 public:
@@ -74,4 +74,4 @@ vec3 image_texture::value(float u, float v, const vec3 &p) const {
     return vec3(r, g, b);
 }
 
-#endif /* TEXTURE_HH */
+#endif /* TEXTUREH */

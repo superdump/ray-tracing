@@ -1,8 +1,8 @@
-#ifndef HITABLE_HH
-#define HITABLE_HH
+#ifndef HITABLEH
+#define HITABLEH
 
-#include "aabb.hh"
-#include "ray.hh"
+#include "aabb.h"
+#include "ray.h"
 
 class material;
 
@@ -43,4 +43,4 @@ public:
     }
 };
 
-#endif /* HITABLE_HH */
+#endif /* HITABLEH */

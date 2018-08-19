@@ -1,10 +1,10 @@
-#ifndef TRANSLATE_HH
-#define TRANSLATE_HH
+#ifndef TRANSLATEH
+#define TRANSLATEH
 
-#include "aabb.hh"
-#include "hitable.hh"
-#include "ray.hh"
-#include "vec3.hh"
+#include "aabb.h"
+#include "hitable.h"
+#include "ray.h"
+#include "vec3.h"
 
 class translate : public hitable {
 public:
@@ -34,4 +34,4 @@ bool translate::bounding_box(float t0, float t1, aabb &box) const {
     return false;
 }
 
-#endif /* TRANSLATE_HH */
+#endif /* TRANSLATEH */

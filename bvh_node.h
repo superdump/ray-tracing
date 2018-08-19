@@ -1,8 +1,8 @@
-#ifndef BVH_NODE_HH
-#define BVH_NODE_HH
+#ifndef BVH_NODEH
+#define BVH_NODEH
 
-#include "hitable.hh"
-#include "ray.hh"
+#include "hitable.h"
+#include "ray.h"
 
 class bvh_node : public hitable {
 public:
@@ -93,4 +93,4 @@ bool bvh_node::bounding_box(float t0, float t1, aabb &b) const {
     return true;
 }
 
-#endif /* BVH_NODE_HH */
+#endif /* BVH_NODEH */

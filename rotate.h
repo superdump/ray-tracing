@@ -1,10 +1,10 @@
-#ifndef ROTATE_HH
-#define ROTATE_HH
+#ifndef ROTATEH
+#define ROTATEH
 
 #include <limits>
 
-#include "aabb.hh"
-#include "hitable.hh"
+#include "aabb.h"
+#include "hitable.h"
 
 class rotate_y : public hitable {
 public:
@@ -75,4 +75,4 @@ bool rotate_y::hit(const ray &r, float tmin, float tmax, hit_record &rec) const 
     return false;
 }
 
-#endif /* ROTATE_HH */
+#endif /* ROTATEH */

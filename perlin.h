@@ -1,7 +1,7 @@
-#ifndef PERLIN_HH
-#define PERLIN_HH
+#ifndef PERLINH
+#define PERLINH
 
-#include "vec3.hh"
+#include "vec3.h"
 
 inline float trilinear_interp(float c[2][2][2], float u, float v, float w) {
     float accum = 0;
@@ -108,4 +108,4 @@ int *perlin::perm_x = perlin_generate_perm();
 int *perlin::perm_y = perlin_generate_perm();
 int *perlin::perm_z = perlin_generate_perm();
 
-#endif /* PERLIN_HH */
+#endif /* PERLINH */

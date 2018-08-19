@@ -1,11 +1,11 @@
-#ifndef FOG_HH
-#define FOG_HH
+#ifndef FOGH
+#define FOGH
 
-#include "aabb.hh"
-#include "hitable.hh"
-#include "material.hh"
-#include "ray.hh"
-#include "texture.hh"
+#include "aabb.h"
+#include "hitable.h"
+#include "material.h"
+#include "ray.h"
+#include "texture.h"
 
 class constant_medium : public hitable {
 public:
@@ -68,4 +68,4 @@ bool constant_medium::hit(const ray &r, float tmin, float tmax, hit_record &rec)
     return false;
 }
 
-#endif /* FOG_HH */
+#endif /* FOGH */

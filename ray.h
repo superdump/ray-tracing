@@ -1,7 +1,7 @@
-#ifndef RAY_HH
-#define RAY_HH
+#ifndef RAYH
+#define RAYH
 
-#include "vec3.hh"
+#include "vec3.h"
 
 class ray {
 public:
@@ -17,4 +17,4 @@ public:
     float time() const { return _time; }
 };
 
-#endif /* RAY_HH */
+#endif /* RAYH */

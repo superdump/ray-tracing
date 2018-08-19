@@ -1,8 +1,8 @@
-#ifndef AABB_HH
-#define AABB_HH
+#ifndef AABBH
+#define AABBH
 
-#include "ray.hh"
-#include "vec3.hh"
+#include "ray.h"
+#include "vec3.h"
 
 inline float ffmin(float a, float b) { return a < b ? a : b; }
 inline float ffmax(float a, float b) { return a > b ? a : b; }
@@ -50,4 +50,4 @@ aabb surrounding_box(aabb box0, aabb box1) {
     return aabb(small, big);
 }
 
-#endif /* AABB_HH */
+#endif /* AABBH */
