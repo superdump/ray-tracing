@@ -1,11 +1,17 @@
 #include <atomic>
+#include <chrono>
 #include <iostream>
 #include <limits>
+#include <thread>
+
+using namespace std::chrono_literals;
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+
+#include "MiniFB.h"
 
 #include "aabb.h"
 #include "aarect.h"
@@ -278,8 +284,8 @@ hitable *random_scene() {
 }
 
 struct ParallelTaskSet : enki::ITaskSet {
-    ParallelTaskSet(int nx, int ny, int ns, camera& c, hitable *w, uint8_t *i)
-            : nx(nx), ny(ny), ns(ns), cam(c), world(w), image(i) {
+    ParallelTaskSet(int nx, int ny, int ns, camera& c, hitable *w, uint8_t *i, unsigned int *fb_)
+            : nx(nx), ny(ny), ns(ns), cam(c), world(w), image(i), fb(fb_) {
         m_SetSize = ny;
         ray_count = 0;
         lines_complete = 0;
@@ -313,6 +319,7 @@ struct ParallelTaskSet : enki::ITaskSet {
                 image[index3 + 0] = ir;
                 image[index3 + 1] = ig;
                 image[index3 + 2] = ib;
+                fb[index] = MFB_RGB(ir, ig, ib);
             }
             ++lines_complete;
             ray_count += local_ray_count;
@@ -355,6 +362,7 @@ struct ParallelTaskSet : enki::ITaskSet {
     const camera& cam;
     const hitable *world;
     uint8_t *image;
+    unsigned int *fb;
     std::atomic<uint64_t> ray_count;
     std::atomic<int> lines_complete;
     const time_t TIMER = time(NULL);
@@ -367,6 +375,11 @@ int main() {
     int ns = RAYS_PER_PIXEL;
 
     uint8_t *image = new uint8_t[nx * ny * 3];
+    unsigned int *fb = new unsigned int[nx * ny];
+
+    if (!mfb_open("Ray Tracing In One Weekend", WIDTH, HEIGHT)) {
+        std::cerr << "ERROR: Failed to open minifb window.\n";
+    }
 
     // hitable *world = random_scene();
     // hitable *world = two_spheres();
@@ -390,9 +403,11 @@ int main() {
 
     std::cerr << "Using " << enki::GetNumHardwareThreads() << " threads\n";
     g_TS.Initialize();
-    ParallelTaskSet task(nx, ny, ns, cam, world, image);
+    ParallelTaskSet task(nx, ny, ns, cam, world, image, fb);
     g_TS.AddTaskSetToPipe(&task);
-    g_TS.WaitforTask(&task);
+    while (!task.GetIsComplete() && mfb_update(fb) != -1) {
+        std::this_thread::sleep_for(100ms);
+    }
 
     stbi_write_png("image.png", nx, ny, 3, image, nx * 3);
 }
