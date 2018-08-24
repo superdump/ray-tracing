@@ -9,7 +9,7 @@ public:
     bvh_node() {}
     bvh_node(hitable **l, int n, float time0, float time1);
 
-    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec) const;
+    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb &box) const;
 
     hitable *left;
@@ -22,11 +22,11 @@ bool bvh_node::bounding_box(float t0, float t1, aabb &b) const {
     return true;
 }
 
-bool bvh_node::hit(const ray &r, float t_min, float t_max, hit_record &rec) const {
+bool bvh_node::hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const {
     if (box.hit(r, t_min, t_max)) {
         hit_record left_rec, right_rec;
-        bool hit_left = left->hit(r, t_min, t_max, left_rec);
-        bool hit_right = right->hit(r, t_min, t_max, right_rec);
+        bool hit_left = left->hit(r, t_min, t_max, left_rec, state);
+        bool hit_right = right->hit(r, t_min, t_max, right_rec, state);
         if (hit_left && hit_right) {
             rec = left_rec.t < right_rec.t ? left_rec : right_rec;
             return true;

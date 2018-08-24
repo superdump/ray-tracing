@@ -27,7 +27,8 @@ public:
     virtual bool hit(const ray& r,
                      float t_min,
                      float t_max,
-                     hit_record& rec) const = 0;
+                     hit_record& rec,
+                     uint32_t& state) const = 0;
     virtual bool bounding_box(float t0, float t1, aabb& box) const = 0;
 };
 
@@ -35,8 +36,8 @@ class flip_normals : public hitable {
 public:
     flip_normals(hitable *p) : ptr(p) {}
 
-    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
-        if (ptr->hit(r, t_min, t_max, rec)) {
+    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const {
+        if (ptr->hit(r, t_min, t_max, rec, state)) {
             rec.normal = -rec.normal;
             return true;
         } else {
@@ -54,16 +55,16 @@ class translate : public hitable {
 public:
     translate(hitable *p, const vec3 &displacement) : ptr(p), offset(displacement) {}
 
-    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec) const;
+    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb &box) const;
 
     hitable *ptr;
     vec3 offset;
 };
 
-bool translate::hit(const ray &r, float t_min, float t_max, hit_record &rec) const {
+bool translate::hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const {
     ray moved_r(r.origin() - offset, r.direction(), r.time());
-    if (ptr->hit(moved_r, t_min, t_max, rec)) {
+    if (ptr->hit(moved_r, t_min, t_max, rec, state)) {
         rec.p += offset;
         return true;
     }
@@ -82,7 +83,7 @@ class rotate_y : public hitable {
   public:
     rotate_y(hitable *p, float angle);
 
-    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec) const;
+    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb &box) const {
         box = bbox;
         return hasbox;
@@ -125,7 +126,7 @@ rotate_y::rotate_y(hitable *p, float angle) : ptr(p) {
     bbox = aabb(min, max);
 }
 
-bool rotate_y::hit(const ray &r, float t_min, float t_max, hit_record &rec) const {
+bool rotate_y::hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const {
     vec3 origin = r.origin();
     vec3 direction = r.direction();
     origin[0] = cos_theta * r.origin()[0] - sin_theta * r.origin()[2];
@@ -133,7 +134,7 @@ bool rotate_y::hit(const ray &r, float t_min, float t_max, hit_record &rec) cons
     direction[0] = cos_theta * r.direction()[0] - sin_theta * r.direction()[2];
     direction[2] = sin_theta * r.direction()[0] + cos_theta * r.direction()[2];
     ray rotated_r(origin, direction, r.time());
-    if (ptr->hit(rotated_r, t_min, t_max, rec)) {
+    if (ptr->hit(rotated_r, t_min, t_max, rec, state)) {
         vec3 p = rec.p;
         vec3 normal = rec.normal;
         p[0] = cos_theta * rec.p[0] + sin_theta * rec.p[2];

@@ -13,7 +13,7 @@ public:
     box() {}
     box(const vec3 &p0, const vec3 &p1, material *ptr);
 
-    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec) const;
+    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb& box) const {
         box = aabb(pmin, pmax);
         return true;
@@ -36,8 +36,8 @@ box::box(const vec3 &p0, const vec3 &p1, material *ptr) {
     list_ptr = new hitable_list(list, 6);
 }
 
-bool box::hit(const ray& r, float t0, float t1, hit_record& rec) const {
-    return list_ptr->hit(r, t0, t1, rec);
+bool box::hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const {
+    return list_ptr->hit(r, t0, t1, rec, state);
 }
 
 #endif /* BOXH */

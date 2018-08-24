@@ -31,15 +31,15 @@ const int HEIGHT = 800;
 const int RAYS_PER_PIXEL = 100;
 const int BOUNCES_PER_RAY = 50;
 
-vec3 color(const ray& r, const hitable *world, uint64_t& ray_count, int depth) {
+vec3 color(const ray& r, const hitable *world, uint64_t& ray_count, int depth, uint32_t& state) {
     ++ray_count;
     hit_record rec;
-    if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec)) {
+    if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec, state)) {
         ray scattered;
         vec3 attenuation;
         vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-        if (depth < BOUNCES_PER_RAY && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-            return emitted + attenuation * color(scattered, world, ray_count, depth + 1);
+        if (depth < BOUNCES_PER_RAY && rec.mat_ptr->scatter(r, rec, attenuation, scattered, state)) {
+            return emitted + attenuation * color(scattered, world, ray_count, depth + 1, state);
         } else {
             return emitted;
         }
@@ -292,11 +292,11 @@ struct ParallelTaskSet : enki::ITaskSet {
                 vec3 col(0.0f, 0.0f, 0.0f);
 
                 for (int s = 0; s < ns; ++s) {
-                    float u = float(i + r01(rng)) / float(nx);
-                    float v = float(j + r01(rng)) / float(ny);
-                    ray r = cam.get_ray(u, v);
-                    // vec3 p = r.point_at_parameter(2.0f);
-                    col += color(r, world, local_ray_count, 0);
+                    float u = float(i + RandomFloat01(state)) / float(nx);
+                    float v = float(j + RandomFloat01(state)) / float(ny);
+                    ray r = cam.get_ray(u, v, state);
+                     // vec3 p = r.point_at_parameter(2.0f);
+                    col += color(r, world, local_ray_count, 0, state);
                 }
                 col /= float(ns);
                 col = vec3(sqrtf(col[0]), sqrtf(col[1]), sqrtf(col[2]));

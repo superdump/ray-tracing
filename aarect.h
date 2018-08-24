@@ -12,7 +12,7 @@ public:
     xy_rect(float _x0, float _x1, float _y0, float _y1, float _k, material *mat)
         : mat_ptr(mat), x0(_x0), x1(_x1), y0(_y0), y1(_y1), k(_k) {}
 
-    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec) const;
+    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb& box) const {
         box = aabb(vec3(x0, y0, k - 0.0001f), vec3(x1, y1, k + 0.0001f));
         return true;
@@ -22,7 +22,7 @@ public:
     float x0, x1, y0, y1, k;
 };
 
-bool xy_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
+bool xy_rect::hit(const ray &r, float t0, float t1, hit_record &rec, uint32_t& state) const {
     float t = (k - r.origin().z()) / r.direction().z();
     if (t < t0 || t > t1) {
         return false;
@@ -47,7 +47,7 @@ public:
     xz_rect(float _x0, float _x1, float _z0, float _z1, float _k, material *mat)
         : mat_ptr(mat), x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k) {}
 
-    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec) const;
+    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb& box) const {
         box = aabb(vec3(x0, k - 0.0001f, z0), vec3(x1, k + 0.0001f, z1));
         return true;
@@ -57,7 +57,7 @@ public:
     float x0, x1, z0, z1, k;
 };
 
-bool xz_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
+bool xz_rect::hit(const ray &r, float t0, float t1, hit_record &rec, uint32_t& state) const {
     float t = (k - r.origin().y()) / r.direction().y();
     if (t < t0 || t > t1) {
         return false;
@@ -82,7 +82,7 @@ public:
     yz_rect(float _y0, float _y1, float _z0, float _z1, float _k, material *mat)
         : mat_ptr(mat), y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k) {}
 
-    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec) const;
+    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb& box) const {
         box = aabb(vec3(k - 0.0001f, y0, z0), vec3(k + 0.0001f, y1, z1));
         return true;
@@ -92,7 +92,7 @@ public:
     float y0, y1, z0, z1, k;
 };
 
-bool yz_rect::hit(const ray &r, float t0, float t1, hit_record &rec) const {
+bool yz_rect::hit(const ray &r, float t0, float t1, hit_record &rec, uint32_t& state) const {
     float t = (k - r.origin().x()) / r.direction().x();
     if (t < t0 || t > t1) {
         return false;

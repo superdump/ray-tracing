@@ -27,10 +27,10 @@ vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2.0f * dot(v, n) * n;
 }
 
-vec3 random_in_unit_sphere() {
+vec3 random_in_unit_sphere(uint32_t& state) {
     vec3 p;
     do {
-        p = 2.0f * vec3(r01(rng), r01(rng), r01(rng)) - ones;
+        p = 2.0f * vec3(RandomFloat01(state), RandomFloat01(state), RandomFloat01(state)) - ones;
     } while (p.squared_length() >= 1.0f);
     return p;
 }
@@ -40,7 +40,8 @@ public:
     virtual bool scatter(const ray& r_in,
                          const hit_record& rec,
                          vec3& attenuation,
-                         ray& scattered) const = 0;
+                         ray& scattered,
+                         uint32_t& state) const = 0;
     virtual vec3 emitted(float u, float v, const vec3& p) const {
         return vec3(0.0f, 0.0f, 0.0f);
     }
@@ -50,7 +51,11 @@ class diffuse_light : public material {
 public:
     diffuse_light(texture *a) : emit(a) {}
 
-    virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const {
+    virtual bool scatter(const ray& r_in,
+                         const hit_record& rec,
+                         vec3& attenuation,
+                         ray& scattered,
+                         uint32_t& state) const {
         return false;
     }
     virtual vec3 emitted(float u, float v, const vec3& p) const {
@@ -64,8 +69,12 @@ class isotropic : public material {
 public:
     isotropic(texture *a) : albedo(a) {}
 
-    virtual bool scatter(const ray &r_in, const hit_record &rec, vec3 &attenuation, ray &scattered) const {
-        scattered = ray(rec.p, random_in_unit_sphere());
+    virtual bool scatter(const ray &r_in,
+                         const hit_record &rec,
+                         vec3 &attenuation,
+                         ray &scattered,
+                         uint32_t& state) const {
+        scattered = ray(rec.p, random_in_unit_sphere(state));
         attenuation = albedo->value(rec.u, rec.v, rec.p);
         return true;
     }
@@ -80,8 +89,9 @@ public:
     virtual bool scatter(const ray& r_in,
                          const hit_record& rec,
                          vec3& attenuation,
-                         ray& scattered) const {
-        vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+                         ray& scattered,
+                         uint32_t& state) const {
+        vec3 target = rec.p + rec.normal + random_in_unit_sphere(state);
         scattered = ray(rec.p, target - rec.p, r_in.time());
         attenuation = albedo->value(rec.u, rec.v, rec.p);
         return true;
@@ -103,9 +113,10 @@ public:
     virtual bool scatter(const ray& r_in,
                          const hit_record& rec,
                          vec3& attenuation,
-                         ray& scattered) const {
+                         ray& scattered,
+                         uint32_t& state) const {
         vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-        scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere(), r_in.time());
+        scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere(state), r_in.time());
         attenuation = albedo;
         return dot(scattered.direction(), rec.normal) > 0.0f;
     }
@@ -121,7 +132,8 @@ public:
     virtual bool scatter(const ray& r_in,
                          const hit_record& rec,
                          vec3& attenuation,
-                         ray& scattered) const {
+                         ray& scattered,
+                         uint32_t& state) const {
         vec3 outward_normal;
         float ni_over_nt;
         attenuation = ones;
@@ -140,7 +152,7 @@ public:
         reflect_prob = refract(r_in.direction(), outward_normal, ni_over_nt, refracted)
             ? schlick(cosine, ref_idx)
             : 1.0f;
-        if (r01(rng) < reflect_prob) {
+        if (RandomFloat01(state) < reflect_prob) {
             vec3 reflected = reflect(r_in.direction(), rec.normal);
             scattered = ray(rec.p, reflected, r_in.time());
         } else {

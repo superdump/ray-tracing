@@ -13,7 +13,7 @@ public:
         phase_function = new isotropic(a);
     }
 
-    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec) const;
+    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb& box) const {
         return boundary->bounding_box(t0, t1, box);
     }
@@ -23,12 +23,12 @@ public:
     material *phase_function;
 };
 
-bool constant_medium::hit(const ray &r, float t_min, float t_max, hit_record &rec) const {
-    // bool db = r01(rng) < 0.00001f;
+bool constant_medium::hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const {
+    // bool db = RandomFloat01(state) < 0.00001f;
     bool db = false;
     hit_record rec1, rec2;
-    if (boundary->hit(r, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), rec1)) {
-        if (boundary->hit(r, rec1.t + 0.0001f, std::numeric_limits<float>::max(), rec2)) {
+    if (boundary->hit(r, -std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), rec1, state)) {
+        if (boundary->hit(r, rec1.t + 0.0001f, std::numeric_limits<float>::max(), rec2, state)) {
             if (db) {
                 std::cerr << "\nt0 t0 " << rec1.t << " " << rec2.t << "\n";
             }
@@ -46,7 +46,7 @@ bool constant_medium::hit(const ray &r, float t_min, float t_max, hit_record &re
             }
             float dir_length = r.direction().length();
             float distance_inside_boundary = (rec2.t - rec1.t) * dir_length;
-            float hit_distance = -(1.0f / density) * logf(r01(rng));
+            float hit_distance = -(1.0f / density) * logf(RandomFloat01(state));
             if (hit_distance < distance_inside_boundary) {
                 if (db) {
                     std::cerr << "hit_distance = " << hit_distance << "\n";
