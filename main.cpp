@@ -1,3 +1,4 @@
+#include <atomic>
 #include <iostream>
 #include <limits>
 
@@ -21,19 +22,24 @@
 #include "surface_texture.h"
 #include "vec3.h"
 
+#include "enkiTS/TaskScheduler.h"
+
+enki::TaskScheduler g_TS;
+
 const int WIDTH = 800;
 const int HEIGHT = 800;
 const int RAYS_PER_PIXEL = 100;
 const int BOUNCES_PER_RAY = 50;
 
-vec3 color(const ray& r, hitable *world, int depth) {
+vec3 color(const ray& r, const hitable *world, uint64_t& ray_count, int depth) {
+    ++ray_count;
     hit_record rec;
     if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec)) {
         ray scattered;
         vec3 attenuation;
         vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
         if (depth < BOUNCES_PER_RAY && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-            return emitted + attenuation * color(scattered, world, depth + 1);
+            return emitted + attenuation * color(scattered, world, ray_count, depth + 1);
         } else {
             return emitted;
         }
@@ -271,6 +277,90 @@ hitable *random_scene() {
     return new bvh_node(list, i, 0.0, 1.0);
 }
 
+struct ParallelTaskSet : enki::ITaskSet {
+    ParallelTaskSet(int nx, int ny, int ns, camera& c, hitable *w, uint8_t *i)
+            : nx(nx), ny(ny), ns(ns), cam(c), world(w), image(i) {
+        m_SetSize = ny;
+        ray_count = 0;
+        lines_complete = 0;
+    }
+    virtual void ExecuteRange(enki::TaskSetPartition range, uint32_t threadnum) {
+        uint64_t local_ray_count = 0;
+        for (uint32_t j = range.start; j < range.end; ++j) {
+            uint32_t state = (j * 9781) | 1;
+            for (int i = 0; i < nx; ++i) {
+                vec3 col(0.0f, 0.0f, 0.0f);
+
+                for (int s = 0; s < ns; ++s) {
+                    float u = float(i + r01(rng)) / float(nx);
+                    float v = float(j + r01(rng)) / float(ny);
+                    ray r = cam.get_ray(u, v);
+                    // vec3 p = r.point_at_parameter(2.0f);
+                    col += color(r, world, local_ray_count, 0);
+                }
+                col /= float(ns);
+                col = vec3(sqrtf(col[0]), sqrtf(col[1]), sqrtf(col[2]));
+                int ir = int(255.99f * col[0]);
+                int ig = int(255.99f * col[1]);
+                int ib = int(255.99f * col[2]);
+                // clipping
+                ir = ir > 255 ? 255 : ir;
+                ig = ig > 255 ? 255 : ig;
+                ib = ib > 255 ? 255 : ib;
+
+                int index = (ny - 1 - j) * nx + i;
+                int index3 = 3 * index;
+                image[index3 + 0] = ir;
+                image[index3 + 1] = ig;
+                image[index3 + 2] = ib;
+            }
+            ++lines_complete;
+            ray_count += local_ray_count;
+            local_ray_count = 0;
+            float progress = double(lines_complete) / double(ny);
+            std::cerr << "[";
+            int pos = BARWIDTH * progress;
+            for (int b = 0; b < BARWIDTH; ++b) {
+                if (b < pos)
+                    std::cerr << "=";
+                else if (b == pos)
+                    std::cerr << ">";
+                else
+                    std::cerr << " ";
+            }
+            std::cerr << "] " << int(progress * 100.0) << " %";
+
+            double elapsed = difftime(time(NULL), TIMER);
+            double remaining = (elapsed / progress) * (1.0 - progress);
+            int ela_mins = elapsed / 60.0;
+            int ela_secs = elapsed - (ela_mins * 60.0);
+            int rem_mins = remaining / 60.0;
+            int rem_secs = remaining - (rem_mins * 60.0);
+            double total = elapsed + remaining;
+            int tot_mins = total / 60.0;
+            int tot_secs = total - (tot_mins * 60.0);
+            if (ela_mins >= 0 && ela_secs >= 0 && rem_mins >= 0 && rem_secs >= 0 && tot_mins >= 0 && tot_secs >= 0) {
+                double mrays_per_sec = double(ray_count) / (1000000.0 * elapsed);
+                std::cerr << " Mrays/s: " << mrays_per_sec
+                    << " - e: " << ela_mins << "m" << ela_secs
+                    << "s - r: " << rem_mins << "m" << rem_secs
+                    << "s - t: " << tot_mins << "m" << tot_secs << "s";
+            }
+            std::cerr << "\r";
+            std::cerr.flush();
+        }
+        std::cerr << std::endl;
+    }
+    const int nx, ny, ns;
+    const camera& cam;
+    const hitable *world;
+    uint8_t *image;
+    std::atomic<uint64_t> ray_count;
+    std::atomic<int> lines_complete;
+    const time_t TIMER = time(NULL);
+    const int BARWIDTH = 70;
+};
+
 int main() {
     int nx = WIDTH;
     int ny = HEIGHT;
@@ -298,67 +388,11 @@ int main() {
                aperture, dist_to_focus,
                0.0f, 1.0f);
 
-    float progress = 0.0;
-    time_t timer = time(NULL);
-    int barWidth = 70;
-
-    for (int j = ny - 1; j >= 0; --j) {
-        for (int i = 0; i < nx; ++i) {
-            vec3 col(0.0f, 0.0f, 0.0f);
-
-            for (int s = 0; s < ns; ++s) {
-                float u = float(i + r01(rng)) / float(nx);
-                float v = float(j + r01(rng)) / float(ny);
-                ray r = cam.get_ray(u, v);
-                // vec3 p = r.point_at_parameter(2.0f);
-                col += color(r, world, 0);
-            }
-            col /= float(ns);
-            col = vec3(sqrtf(col[0]), sqrtf(col[1]), sqrtf(col[2]));
-            int ir = int(255.99f * col[0]);
-            int ig = int(255.99f * col[1]);
-            int ib = int(255.99f * col[2]);
-            // clipping
-            ir = ir > 255 ? 255 : ir;
-            ig = ig > 255 ? 255 : ig;
-            ib = ib > 255 ? 255 : ib;
-
-            int index = (ny - 1 - j) * nx + i;
-            int index3 = 3 * index;
-            image[index3 + 0] = ir;
-            image[index3 + 1] = ig;
-            image[index3 + 2] = ib;
-        }
-        progress = double(ny - 1 - j) / double(ny);
-        std::cerr << "[";
-        int pos = barWidth * progress;
-        for (int b = 0; b < barWidth; ++b) {
-            if (b < pos)
-                std::cerr << "=";
-            else if (b == pos)
-                std::cerr << ">";
-            else
-                std::cerr << " ";
-        }
-        std::cerr << "] " << int(progress * 100.0) << " %";
-
-        double elapsed = difftime(time(NULL), timer);
-        double remaining = (elapsed / progress) * (1.0 - progress);
-        int ela_mins = elapsed / 60.0;
-        int ela_secs = elapsed - (ela_mins * 60.0);
-        int rem_mins = remaining / 60.0;
-        int rem_secs = remaining - (rem_mins * 60.0);
-        double total = elapsed + remaining;
-        int tot_mins = total / 60.0;
-        int tot_secs = total - (tot_mins * 60.0);
-        if (ela_mins >= 0 && ela_secs >= 0 && rem_mins >= 0 && rem_secs >= 0 && tot_mins >= 0 && tot_secs >= 0) {
-            double mrays_per_sec = double(nx * ny * RAYS_PER_PIXEL * BOUNCES_PER_RAY * 2) / (1000000.0 * total);
-            std::cerr << " Mrays/s: " << mrays_per_sec << " - e: " << ela_mins << "m" << ela_secs << "s - r: " << rem_mins << "m" << rem_secs << "s - t: " << tot_mins << "m" << tot_secs << "s";
-        }
-        std::cerr << "\r";
-        std::cerr.flush();
-    }
-    std::cerr << std::endl;
+    std::cerr << "Using " << enki::GetNumHardwareThreads() << " threads\n";
+    g_TS.Initialize();
+    ParallelTaskSet task(nx, ny, ns, cam, world, image);
+    g_TS.AddTaskSetToPipe(&task);
+    g_TS.WaitforTask(&task);
 
     stbi_write_png("image.png", nx, ny, 3, image, nx * 3);
 }
