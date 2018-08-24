@@ -1,7 +1,9 @@
 .DS_Store
-*.ppm
+.vscode/
+*.o
 *.png
+*.ppm
 a.out
 a.out.dSYM/
-.vscode/
 images/
+rtiow
