@@ -3,6 +3,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 #include "aabb.h"
 #include "aarect.h"
@@ -274,7 +276,7 @@ int main() {
     int ny = HEIGHT;
     int ns = RAYS_PER_PIXEL;
 
-    std::cout << "P3\n" << nx << " " << ny << "\n255\n";
+    uint8_t *image = new uint8_t[nx * ny * 3];
 
     // hitable *world = random_scene();
     // hitable *world = two_spheres();
@@ -321,7 +323,11 @@ int main() {
             ig = ig > 255 ? 255 : ig;
             ib = ib > 255 ? 255 : ib;
 
-            std::cout << ir << " " << ig << " " << ib << "\n";
+            int index = (ny - 1 - j) * nx + i;
+            int index3 = 3 * index;
+            image[index3 + 0] = ir;
+            image[index3 + 1] = ig;
+            image[index3 + 2] = ib;
         }
         progress = double(ny - 1 - j) / double(ny);
         std::cerr << "[";
@@ -353,4 +359,6 @@ int main() {
         std::cerr.flush();
     }
     std::cerr << std::endl;
+
+    stbi_write_png("image.png", nx, ny, 3, image, nx * 3);
 }
