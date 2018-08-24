@@ -28,6 +28,9 @@ ENKITS_HEADERS = \
 	enkiTS/TaskScheduler.h \
 	enkiTS/Threads.h
 
+.PHONY: all
+all: rtiow
+
 enkiTS.o: enkiTS/TaskScheduler.cpp $(ENKITS_HEADERS)
 	$(C++) -c -o $@ $< $(CXXFLAGS)
 
