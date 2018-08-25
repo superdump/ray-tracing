@@ -37,8 +37,14 @@ enkiTS.o: enkiTS/TaskScheduler.cpp $(ENKITS_HEADERS)
 main.o: main.cpp $(HEADERS)
 	$(C++) -c -o $@ $< $(CXXFLAGS)
 
+%.o: %.cpp
+	$(C++) -c -o $@ $< $(CXXFLAGS)
+
 rtiow: enkiTS.o main.o
 	$(C++) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
+pi: pi.o
+	$(C++) -o $@ $^ $(CXXFLAGS)
+
 clean:
-	rm -f a.out rtiow *.o
+	rm -f a.out rtiow pi *.o
