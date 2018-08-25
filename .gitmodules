@@ -4,3 +4,6 @@
 [submodule "subprojects/minifb"]
 	path = subprojects/minifb
 	url = git@github.com:superdump/minifb.git
+[submodule "subprojects/docopt.cpp"]
+	path = subprojects/docopt.cpp
+	url = git@github.com:superdump/docopt.cpp.git

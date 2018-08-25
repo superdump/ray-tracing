@@ -13,6 +13,7 @@ Currently I have implemented:
 * Image reading/writing using the [single-file 'stb' image libraries](https://github.com/nothings/stb) which are [public-domain- or MIT- licensed](https://github.com/nothings/stb#whats-the-license)
 * A [NASA Blue Marble Next Generation image](https://visibleearth.nasa.gov/view.php?id=73909) for texturing the Earth spheres
     * R. Stöckli, E. Vermote, N. Saleous, R. Simmon and D. Herring (2005). The Blue Marble Next Generation - A true color earth dataset including seasonal dynamics from MODIS. Published by the NASA Earth Observatory. Corresponding author: rstockli@climate.gsfc.nasa.gov
+* [docopt.cpp](https://github.com/docopt/docopt.cpp) for super convenient command line parsing which is [MIT-licensed](https://github.com/docopt/docopt.cpp/blob/master/LICENSE-MIT)
 
 ## Usage
 
@@ -39,8 +40,37 @@ ninja
 
 From within `builddir`:
 ```
-cp ../data/world.topo.bathy.200412.3x5400x2700.jpg .
 ./rtiow
+```
+
+Help:
+```
+./rtiow --help
+Ray Tracing in One Week.
+
+    Usage:
+      rtiow [-s SCENE] [-w WIDTH] [-h HEIGHT] [-r RAYS_PER_PIXEL]
+            [-b MAX_BOUNCES_PER_RAY] [-t TEXTURE] [-o OUTPUT]
+      rtiow (-h | --help)
+      rtiow --version
+
+    Options:
+      --help                Show this screen.
+      --version             Show version.
+      -w, --width=WIDTH     Width of output image. [default: 800]
+      -h, --height=HEIGHT   Height of output image. [default: 800]
+      -s, --scene=SCENE     Name of scene to be rendered. One of:
+                            earth, two_spheres, final, cornell_final,
+                            cornell_balls cornell_smoke cornell_box,
+                            two_perlin_spheres simple_light random_scene
+                            [default: final]
+      -o, --output=OUTPUT   Output PNG file path. [default: image.png]
+      -r, --rays-per-pixel=RAYS_PER_PIXEL Number of rays to cast per pixel.
+                            [default: 100]
+      -b, --bounces-per-ray=MAX_BOUNCES_PER_RAY Maximum number of bounces per
+                            ray. [default: 50]
+      -t, --texture=TEXTURE Relative path to a JPEG texture.
+                            [default: ../data/world.topo.bathy.200412.3x5400x2700.jpg]
 ```
 
 ## Peter Shirley's Books

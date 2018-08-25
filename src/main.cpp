@@ -2,9 +2,13 @@
 #include <chrono>
 #include <iostream>
 #include <limits>
+#include <map>
+#include <string>
 #include <thread>
 
 using namespace std::chrono_literals;
+
+#include "docopt.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -32,20 +36,15 @@ using namespace std::chrono_literals;
 
 enki::TaskScheduler g_TS;
 
-const int WIDTH = 800;
-const int HEIGHT = 800;
-const int RAYS_PER_PIXEL = 100;
-const int BOUNCES_PER_RAY = 50;
-
-vec3 color(const ray& r, const hitable *world, uint64_t& ray_count, int depth, uint32_t& state) {
+vec3 color(const ray& r, const hitable *world, int nb, uint64_t& ray_count, int depth, uint32_t& state) {
     ++ray_count;
     hit_record rec;
     if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec, state)) {
         ray scattered;
         vec3 attenuation;
         vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-        if (depth < BOUNCES_PER_RAY && rec.mat_ptr->scatter(r, rec, attenuation, scattered, state)) {
-            return emitted + attenuation * color(scattered, world, ray_count, depth + 1, state);
+        if (depth < nb && rec.mat_ptr->scatter(r, rec, attenuation, scattered, state)) {
+            return emitted + attenuation * color(scattered, world, nb, ray_count, depth + 1, state);
         } else {
             return emitted;
         }
@@ -54,9 +53,9 @@ vec3 color(const ray& r, const hitable *world, uint64_t& ray_count, int depth, u
     }
 }
 
-hitable *earth() {
+hitable *earth(std::string tex) {
     int nx, ny, nn;
-    unsigned char *tex_data = stbi_load("world.topo.bathy.200412.3x5400x2700.jpg", &nx, &ny, &nn, 0);
+    unsigned char *tex_data = stbi_load(tex.c_str(), &nx, &ny, &nn, 0);
     material *mat = new lambertian(new image_texture(tex_data, nx, ny));
     int n = 50;
     hitable** list = new hitable*[n + 1];
@@ -76,7 +75,7 @@ hitable *two_spheres() {
     return new hitable_list(list, 2);
 }
 
-hitable *final() {
+hitable *final(std::string tex) {
     int nb = 20;
     hitable **list = new hitable *[30];
     hitable **boxlist = new hitable *[10000];
@@ -110,7 +109,7 @@ hitable *final() {
     boundary = new sphere(vec3(0, 0, 0), 5000, new dielectric(1.5));
     list[l++] = new constant_medium(boundary, 0.0001, new constant_texture(vec3(1.0, 1.0, 1.0)));
     int nx, ny, nn;
-    unsigned char *tex_data = stbi_load("world.topo.bathy.200412.3x5400x2700.jpg", &nx, &ny, &nn, 0);
+    unsigned char *tex_data = stbi_load(tex.c_str(), &nx, &ny, &nn, 0);
     material *emat = new lambertian(new image_texture(tex_data, nx, ny));
     list[l++] = new sphere(vec3(400, 200, 400), 100, emat);
     texture *pertext = new noise_texture(0.1);
@@ -123,12 +122,12 @@ hitable *final() {
     return new hitable_list(list, l);
 }
 
-hitable *cornell_final() {
+hitable *cornell_final(std::string tex) {
     hitable **list = new hitable*[30];
     // hitable **boxlist = new hitable*[10000];
     // texture *pertext = new noise_texture(0.1);
     // int nx, ny, nn;
-    // unsigned char *tex_data = stbi_load("world.topo.bathy.200412.3x5400x2700.jpg", &nx, &ny, &nn, 0);
+    // unsigned char *tex_data = stbi_load(tex.c_str(), &nx, &ny, &nn, 0);
     // material *mat =  new lambertian(new image_texture(tex_data, nx, ny));
     int i = 0;
     material *red = new lambertian( new constant_texture(vec3(0.65, 0.05, 0.05)) );
@@ -284,8 +283,8 @@ hitable *random_scene() {
 }
 
 struct ParallelTaskSet : enki::ITaskSet {
-    ParallelTaskSet(int nx, int ny, int ns, camera& c, hitable *w, uint8_t *i, unsigned int *fb_)
-            : nx(nx), ny(ny), ns(ns), cam(c), world(w), image(i), fb(fb_) {
+    ParallelTaskSet(int nx, int ny, int ns, int nb, camera& c, hitable *w, uint8_t *i, unsigned int *fb_)
+            : nx(nx), ny(ny), ns(ns), nb(nb), cam(c), world(w), image(i), fb(fb_) {
         m_SetSize = ny;
         ray_count = 0;
         lines_complete = 0;
@@ -302,10 +301,12 @@ struct ParallelTaskSet : enki::ITaskSet {
                     float v = float(j + RandomFloat01(state)) / float(ny);
                     ray r = cam.get_ray(u, v, state);
                      // vec3 p = r.point_at_parameter(2.0f);
-                    col += color(r, world, local_ray_count, 0, state);
+                    col += color(r, world, nb, local_ray_count, 0, state);
                 }
                 col /= float(ns);
+                // gamma correction
                 col = vec3(sqrtf(col[0]), sqrtf(col[1]), sqrtf(col[2]));
+                // [0.0, 1.0] -> [0, 255]
                 int ir = int(255.99f * col[0]);
                 int ig = int(255.99f * col[1]);
                 int ib = int(255.99f * col[2]);
@@ -358,7 +359,7 @@ struct ParallelTaskSet : enki::ITaskSet {
         }
         std::cerr << std::endl;
     }
-    const int nx, ny, ns;
+    const int nx, ny, ns, nb;
     const camera& cam;
     const hitable *world;
     uint8_t *image;
@@ -369,26 +370,78 @@ struct ParallelTaskSet : enki::ITaskSet {
     const int BARWIDTH = 70;
 };
 
-int main() {
-    int nx = WIDTH;
-    int ny = HEIGHT;
-    int ns = RAYS_PER_PIXEL;
+hitable *get_scene(std::string scene, std::string texture) {
+    if (scene == "earth") {
+        return earth(texture);
+    } else if (scene == "two_spheres") {
+        return two_spheres();
+    } else if (scene == "final") {
+        return final(texture);
+    } else if (scene == "cornell_final") {
+        return cornell_final(texture);
+    } else if (scene == "cornell_balls") {
+        return cornell_balls();
+    } else if (scene == "cornell_smoke") {
+        return cornell_smoke();
+    } else if (scene == "cornell_box") {
+        return cornell_box();
+    } else if (scene == "two_perlin_spheres") {
+        return two_perlin_spheres();
+    } else if (scene == "simple_light") {
+        return simple_light();
+    } else if (scene == "random_scene") {
+        return random_scene();
+    }
+}
+
+static const char USAGE[] =
+R"(Ray Tracing in One Week.
+
+    Usage:
+      rtiow [-s SCENE] [-w WIDTH] [-h HEIGHT] [-r RAYS_PER_PIXEL]
+            [-b MAX_BOUNCES_PER_RAY] [-t TEXTURE] [-o OUTPUT]
+      rtiow (-h | --help)
+      rtiow --version
+
+    Options:
+      --help                Show this screen.
+      --version             Show version.
+      -w, --width=WIDTH     Width of output image. [default: 800]
+      -h, --height=HEIGHT   Height of output image. [default: 800]
+      -s, --scene=SCENE     Name of scene to be rendered. One of:
+                            earth, two_spheres, final, cornell_final,
+                            cornell_balls cornell_smoke cornell_box,
+                            two_perlin_spheres simple_light random_scene
+                            [default: final]
+      -o, --output=OUTPUT   Output PNG file path. [default: image.png]
+      -r, --rays-per-pixel=RAYS_PER_PIXEL Number of rays to cast per pixel.
+                            [default: 100]
+      -b, --bounces-per-ray=MAX_BOUNCES_PER_RAY Maximum number of bounces per
+                            ray. [default: 50]
+      -t, --texture=TEXTURE Relative path to a JPEG texture.
+                            [default: ../data/world.topo.bathy.200412.3x5400x2700.jpg]
+)";
+
+int main(int argc, const char** argv)
+{
+    std::map<std::string, docopt::value> args = docopt::docopt(
+        USAGE, { argv + 1, argv + argc }, true, "Ray Tracing in One Week");
+
+    int nx = args["--width"].asLong();
+    int ny = args["--height"].asLong();
+    int ns = args["--rays-per-pixel"].asLong();
+    int nb = args["--bounces-per-ray"].asLong();
 
     uint8_t *image = new uint8_t[nx * ny * 3];
     unsigned int *fb = new unsigned int[nx * ny];
 
-    if (!mfb_open("Ray Tracing In One Weekend", WIDTH, HEIGHT)) {
+    if (!mfb_open("Ray Tracing In One Weekend", nx, ny)) {
         std::cerr << "ERROR: Failed to open minifb window.\n";
     }
 
-    // hitable *world = random_scene();
-    // hitable *world = two_spheres();
-    // hitable *world = two_perlin_spheres();
-    // hitable *world = earth();
-    // hitable *world = simple_light();
-    // hitable *world = cornell_box();
-    // hitable *world = cornell_smoke();
-    hitable *world = final();
+    auto scene = args["--scene"].asString();
+    auto texture = args["--texture"].asString();
+    hitable *world = get_scene(scene, texture);
 
     vec3 lookfrom(478.0f, 278.0f, -600.0f);
     vec3 lookat(278.0f, 278.0f, 0.0f);
@@ -401,13 +454,17 @@ int main() {
                aperture, dist_to_focus,
                0.0f, 1.0f);
 
+    std::cerr << "Rendering '" << scene << "' scene at " << nx << "x" << ny
+        << " with " << ns << " rays/px and up to " << nb << " bounces\n";
     std::cerr << "Using " << enki::GetNumHardwareThreads() << " threads\n";
     g_TS.Initialize();
-    ParallelTaskSet task(nx, ny, ns, cam, world, image, fb);
+    ParallelTaskSet task(nx, ny, ns, nb, cam, world, image, fb);
     g_TS.AddTaskSetToPipe(&task);
     while (!task.GetIsComplete() && mfb_update(fb) != -1) {
         std::this_thread::sleep_for(100ms);
     }
 
-    stbi_write_png("image.png", nx, ny, 3, image, nx * 3);
+    auto output = args["--output"].asString();
+    std::cerr << "Writing PNG to: " << output << "\n";
+    stbi_write_png(output.c_str(), nx, ny, 3, image, nx * 3);
 }

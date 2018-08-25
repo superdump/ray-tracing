@@ -26,6 +26,7 @@ rtiow_sources = [
     'src/vec3.h'
 ]
 rtiow_deps = [
+    dependency('docopt.cpp', fallback: ['docopt.cpp', 'docopt_dep']),
     dependency('enkiTS', fallback: ['enkiTS', 'enkiTS_dep']),
     dependency('minifb', fallback: ['minifb', 'minifb_dep']),
     dependency('threads')
