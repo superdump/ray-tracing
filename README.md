@@ -31,7 +31,7 @@ cp ../data/world.topo.bathy.200412.3x5400x2700.jpg .
 Peter Shirley has very kindly made the series of books publicly available. There are kindle versions available on Amazon or grab the PDFs via Shirley's page above for the price of "pay what you wish" with 50% going to not for profit programming education organisations. See the page above for details! :)
 
 There are also code repositories for each of the books:
-* [Peter Shirley's Ray Tracing in One Weekend](https://github.com/petershirley/raytracinginoneweekend)
+* [Ray Tracing in One Weekend](https://github.com/petershirley/raytracinginoneweekend)
 * [Ray Tracing the Next Week](https://github.com/petershirley/raytracingthenextweek)
 * [Ray Tracing the Rest of Your Life](https://github.com/petershirley/raytracingtherestofyourlife)
 
