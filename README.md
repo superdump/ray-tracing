@@ -12,6 +12,7 @@ Currently I have implemented:
 * A framebuffer preview using [MiniFB](https://github.com/emoon/minifb) by Daniel Collin which is [MIT-licensed](https://github.com/emoon/minifb/blob/master/LICENSE) and included in-tree
 * Image reading/writing using the [single-file 'stb' image libraries](https://github.com/nothings/stb) which are [public-domain- or MIT- licensed](https://github.com/nothings/stb#whats-the-license)
 * A [NASA Blue Marble Next Generation image](https://visibleearth.nasa.gov/view.php?id=73909) for texturing the Earth spheres
+    * R. Stöckli, E. Vermote, N. Saleous, R. Simmon and D. Herring (2005). The Blue Marble Next Generation - A true color earth dataset including seasonal dynamics from MODIS. Published by the NASA Earth Observatory. Corresponding author: rstockli@climate.gsfc.nasa.gov
 
 ## Usage
 
