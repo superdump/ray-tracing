@@ -28,7 +28,7 @@ using namespace std::chrono_literals;
 #include "surface_texture.h"
 #include "vec3.h"
 
-#include "enkiTS/TaskScheduler.h"
+#include "TaskScheduler.h"
 
 enki::TaskScheduler g_TS;
 

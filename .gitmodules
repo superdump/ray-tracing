@@ -1,0 +1,6 @@
+[submodule "subprojects/enkiTS"]
+	path = subprojects/enkiTS
+	url = git@github.com:superdump/enkiTS.git
+[submodule "subprojects/minifb"]
+	path = subprojects/minifb
+	url = git@github.com:superdump/minifb.git
