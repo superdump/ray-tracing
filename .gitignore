@@ -5,6 +5,7 @@
 *.ppm
 a.out
 a.out.dSYM/
+builddir/
 images/
 pi
 rtiow
