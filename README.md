@@ -1,0 +1,39 @@
+# Ray Tracing in One Weekend
+
+## What is this?
+
+This project is my personal step through of [Peter Shirley's Ray Tracing in One Weekend](http://in1weekend.blogspot.com/2016/01/ray-tracing-in-one-weekend.html). I may (have) continue(d) on from the end of those books to add some experiments of my own.
+
+## Peter Shirley's Books
+
+Peter Shirley has very kindly made the series of books publicly available. There are kindle versions available on Amazon or grab the PDFs via Shirley's page above for the price of "pay what you wish" with 50% going to not for profit programming education organisations. See the page above for details!
+
+There are also code repositories for each of the books:
+* [Peter Shirley's Ray Tracing in One Weekend](https://github.com/petershirley/raytracinginoneweekend)
+* [Ray Tracing the Next Week](https://github.com/petershirley/raytracingthenextweek)
+* [Ray Tracing the Rest of Your Life](https://github.com/petershirley/raytracingtherestofyourlife)
+
+## Optimisations
+
+While implementing the path tracing ray tracer, I started to wonder about potential optimisations. It seems path tracers and in particular Shirley's Ray Tracing in One Weekend series is hot right now and others have already done the work.
+
+I was interested in exploring an implementation in Rust to capitalise on the language's thread safety through memory safety. [Cameron Hart](https://github.com/bitshifter) (a game developer) made a set of interesting blog posts about writing an optimised Rust implementation:
+1. [Rust ray tracer in one weekend](https://bitshifter.github.io/2018/04/29/rust-ray-tracer-in-one-weekend/)
+2. [Path tracing in parallel with Rayon](https://bitshifter.github.io/2018/05/07/path-tracing-in-parallel/)
+3. [Optimising path tracing with SIMD](https://bitshifter.github.io/2018/06/04/simd-path-tracing/)
+4. [Optimising path tracing: the last 10%](https://bitshifter.github.io/2018/06/20/the-last-10-percent/)
+
+Hart's material referred to an [optimisation-focused blog series](http://aras-p.info/blog/2018/03/28/Daily-Pathtracer-Part-0-Intro/) by [Aras Pranckevičius](https://github.com/aras-p) (a Unity developer) that is highly worth reading. It also includes Unity burst-compiled and GPU-optimised variants that achieve really impressive performance! [Code here](https://github.com/aras-p/ToyPathTracer).
+
+## What is here?
+
+Currently I have implemented:
+* Ray Tracing in One Weekend
+* Ray Tracing: the Next Week
+* Multi-threading using [enkiTS](https://github.com/dougbinks/enkiTS) which is [zlib-licensed](https://github.com/dougbinks/enkiTS/blob/master/License.txt) and included in-tree
+* XorShift PRNG with per-thread state as in Aras' work which is using [The Unlicense](https://github.com/aras-p/ToyPathTracer/blob/master/license.md).
+* A framebuffer preview using [MiniFB](https://github.com/emoon/minifb) by Daniel Collin which is [MIT-licensed](https://github.com/emoon/minifb/blob/master/LICENSE) and included in-tree
+
+## License
+
+As so much of the code is from Peter Shirley's public domain code, with some modifications similar to the 'Unlicense'-licensed public domain code by Aras Pranckevičius, it is only fitting that I follow suit and make this code public domain using [The Unlicense](https://unlicense.org/). See the LICENSE file for details.
