@@ -3,6 +3,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <sstream>
 #include <string>
 #include <thread>
 
@@ -326,17 +327,18 @@ struct ParallelTaskSet : enki::ITaskSet {
             ray_count += local_ray_count;
             local_ray_count = 0;
             float progress = double(lines_complete) / double(ny);
-            std::cerr << "[";
+            std::stringstream stream;
+            stream << "[";
             int pos = BARWIDTH * progress;
             for (int b = 0; b < BARWIDTH; ++b) {
                 if (b < pos)
-                    std::cerr << "=";
+                    stream << "=";
                 else if (b == pos)
-                    std::cerr << ">";
+                    stream << ">";
                 else
-                    std::cerr << " ";
+                    stream << " ";
             }
-            std::cerr << "] " << int(progress * 100.0) << " %";
+            stream << "] " << int(progress * 100.0) << " %";
 
             double elapsed = difftime(time(NULL), TIMER);
             double remaining = (elapsed / progress) * (1.0 - progress);
@@ -349,15 +351,15 @@ struct ParallelTaskSet : enki::ITaskSet {
             int tot_secs = total - (tot_mins * 60.0);
             if (ela_mins >= 0 && ela_secs >= 0 && rem_mins >= 0 && rem_secs >= 0 && tot_mins >= 0 && tot_secs >= 0) {
                 double mrays_per_sec = double(ray_count) / (1000000.0 * elapsed);
-                std::cerr << " Mrays/s: " << mrays_per_sec
+                stream << " Mrays/s: " << mrays_per_sec
                     << " - e: " << ela_mins << "m" << ela_secs
                     << "s - r: " << rem_mins << "m" << rem_secs
                     << "s - t: " << tot_mins << "m" << tot_secs << "s";
             }
-            std::cerr << "\r";
+            stream << "\r";
+            std::cerr << stream.str();
             std::cerr.flush();
         }
-        std::cerr << std::endl;
     }
     const int nx, ny, ns, nb;
     const camera& cam;
@@ -463,6 +465,7 @@ int main(int argc, const char** argv)
     while (!task.GetIsComplete() && mfb_update(fb) != -1) {
         std::this_thread::sleep_for(100ms);
     }
+    std::cerr << std::endl;
 
     auto output = args["--output"].asString();
     std::cerr << "Writing PNG to: " << output << "\n";
