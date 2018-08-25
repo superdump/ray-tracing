@@ -17,11 +17,27 @@ Currently I have implemented:
 
 I have used the [meson build system](https://mesonbuild.com/) for the project as I find writing portable `Makefile`s more pain than I'm willing on my spare time, if I can avoid it. :)
 
+### (Optional) Update Code
+
+```
+git pull --rebase
+# enkiTS and minifb are in git submodules
+git submodule update --init --recursive
+```
+
+### Building
+
+**NOTE: Don't forget to init/update the submodules!**
 ```
 meson builddir
 cd builddir
 ninja
-# And then to run it...
+```
+
+### Running
+
+From within `builddir`:
+```
 cp ../data/world.topo.bathy.200412.3x5400x2700.jpg .
 ./rtiow
 ```
