@@ -2,6 +2,8 @@
 #define MATERIALH
 
 #include "hitable.h"
+#include "onb.h"
+#include "pdf.h"
 #include "ray.h"
 #include "texture.h"
 #include "vec3.h"
@@ -110,10 +112,12 @@ public:
                          ray& scattered,
                          float& pdf,
                          uint32_t& state) const {
-        vec3 target = rec.p + rec.normal + random_in_unit_sphere(state);
-        scattered = ray(rec.p, unit_vector(target - rec.p), r_in.time());
+        onb uvw;
+        uvw.build_from_w(rec.normal);
+        vec3 direction = uvw.local(random_cosine_direction(state));
+        scattered = ray(rec.p, unit_vector(direction), r_in.time());
         alb = albedo->value(rec.u, rec.v, rec.p);
-        pdf = dot(rec.normal, scattered.direction()) / M_PI;
+        pdf = dot(uvw.w(), scattered.direction()) / M_PI;
         return true;
     }
 
