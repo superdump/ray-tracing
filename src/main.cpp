@@ -247,7 +247,7 @@ hitable *random_scene() {
     list[i++] = new sphere(vec3(0.0f, 1.0f, 0.0f), 1.0f, new dielectric(1.5f));
     list[i++] = new sphere(vec3(-4.0f, 1.0f, 0.0f), 1.0f, new lambertian(new constant_texture(vec3(0.4f, 0.2f, 0.1f))));
     list[i++] = new sphere(vec3(4.0f, 1.0f, 0.0f), 1.0f, new metal(vec3(0.7f, 0.6f, 0.5f), 0.0f));
-    list[i++] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
+    list[i++] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.7f, 1.0f))));
 
     // return new hitable_list(list, i);
     return new bvh_node(list, i, 0.0, 1.0);
@@ -262,7 +262,7 @@ hitable *two_spheres() {
     hitable** list = new hitable*[n + 1];
     list[0] = new sphere(vec3(0, -10, 0), 10, new lambertian(checker));
     list[1] = new sphere(vec3(0, 10, 0), 10, new lambertian(checker));
-    list[2] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
+    list[2] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.7f, 1.0f))));
     return new hitable_list(list, 3);
 }
 
@@ -272,7 +272,7 @@ hitable *two_perlin_spheres() {
     hitable** list = new hitable*[n + 1];
     list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambertian(noise));
     list[1] = new sphere(vec3(0, 2, 0), 2, new lambertian(noise));
-    list[2] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
+    list[2] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.7f, 1.0f))));
     return new hitable_list(list, 3);
 }
 
@@ -283,7 +283,7 @@ hitable *earth(std::string tex) {
     int n = 50;
     hitable** list = new hitable*[n + 1];
     list[0] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, mat);
-    list[1] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
+    list[1] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.7f, 1.0f))));
     return new hitable_list(list, 2);
 }
 
