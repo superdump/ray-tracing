@@ -37,23 +37,6 @@ using namespace std::chrono_literals;
 
 enki::TaskScheduler g_TS;
 
-vec3 color(const ray& r, const hitable *world, int nb, uint64_t& ray_count, int depth, uint32_t& state) {
-    ++ray_count;
-    hit_record rec;
-    if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec, state)) {
-        ray scattered;
-        vec3 attenuation;
-        vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-        if (depth < nb && rec.mat_ptr->scatter(r, rec, attenuation, scattered, state)) {
-            return emitted + attenuation * color(scattered, world, nb, ray_count, depth + 1, state);
-        } else {
-            return emitted;
-        }
-    } else {
-        return zeros;
-    }
-}
-
 hitable *final(std::string tex) {
     int nb = 20;
     hitable **list = new hitable *[30];
@@ -287,95 +270,6 @@ hitable *simple_light() {
     return new hitable_list(list, 4);
 }
 
-struct ParallelTaskSet : enki::ITaskSet {
-    ParallelTaskSet(int nx, int ny, int ns, int nb, camera& c, hitable *w, uint8_t *i, unsigned int *fb_)
-            : nx(nx), ny(ny), ns(ns), nb(nb), cam(c), world(w), image(i), fb(fb_) {
-        m_SetSize = ny;
-        ray_count = 0;
-        lines_complete = 0;
-    }
-    virtual void ExecuteRange(enki::TaskSetPartition range, uint32_t threadnum) {
-        uint64_t local_ray_count = 0;
-        for (uint32_t j = range.start; j < range.end; ++j) {
-            uint32_t state = (j * 9781) | 1;
-            for (int i = 0; i < nx; ++i) {
-                vec3 col(0.0f, 0.0f, 0.0f);
-
-                for (int s = 0; s < ns; ++s) {
-                    float u = float(i + RandomFloat01(state)) / float(nx);
-                    float v = float(j + RandomFloat01(state)) / float(ny);
-                    ray r = cam.get_ray(u, v, state);
-                     // vec3 p = r.point_at_parameter(2.0f);
-                    col += color(r, world, nb, local_ray_count, 0, state);
-                }
-                col /= float(ns);
-                // gamma correction
-                col = vec3(sqrtf(col[0]), sqrtf(col[1]), sqrtf(col[2]));
-                // [0.0, 1.0] -> [0, 255]
-                int ir = int(255.99f * col[0]);
-                int ig = int(255.99f * col[1]);
-                int ib = int(255.99f * col[2]);
-                // clipping
-                ir = ir > 255 ? 255 : ir;
-                ig = ig > 255 ? 255 : ig;
-                ib = ib > 255 ? 255 : ib;
-
-                int index = (ny - 1 - j) * nx + i;
-                int index3 = 3 * index;
-                image[index3 + 0] = ir;
-                image[index3 + 1] = ig;
-                image[index3 + 2] = ib;
-                fb[index] = MFB_RGB(ir, ig, ib);
-            }
-            ++lines_complete;
-            ray_count += local_ray_count;
-            local_ray_count = 0;
-            float progress = double(lines_complete) / double(ny);
-            std::stringstream stream;
-            stream << "[";
-            int pos = BARWIDTH * progress;
-            for (int b = 0; b < BARWIDTH; ++b) {
-                if (b < pos)
-                    stream << "=";
-                else if (b == pos)
-                    stream << ">";
-                else
-                    stream << " ";
-            }
-            stream << "] " << int(progress * 100.0) << " %";
-
-            double elapsed = difftime(time(NULL), TIMER);
-            double remaining = (elapsed / progress) * (1.0 - progress);
-            int ela_mins = elapsed / 60.0;
-            int ela_secs = elapsed - (ela_mins * 60.0);
-            int rem_mins = remaining / 60.0;
-            int rem_secs = remaining - (rem_mins * 60.0);
-            double total = elapsed + remaining;
-            int tot_mins = total / 60.0;
-            int tot_secs = total - (tot_mins * 60.0);
-            if (ela_mins >= 0 && ela_secs >= 0 && rem_mins >= 0 && rem_secs >= 0 && tot_mins >= 0 && tot_secs >= 0) {
-                double mrays_per_sec = double(ray_count) / (1000000.0 * elapsed);
-                stream << " Mrays/s: " << mrays_per_sec
-                    << " - e: " << ela_mins << "m" << ela_secs
-                    << "s - r: " << rem_mins << "m" << rem_secs
-                    << "s - t: " << tot_mins << "m" << tot_secs << "s";
-            }
-            stream << "\r";
-            std::cerr << stream.str();
-            std::cerr.flush();
-        }
-    }
-    const int nx, ny, ns, nb;
-    const camera& cam;
-    const hitable *world;
-    uint8_t *image;
-    unsigned int *fb;
-    std::atomic<uint64_t> ray_count;
-    std::atomic<int> lines_complete;
-    const time_t TIMER = time(NULL);
-    const int BARWIDTH = 70;
-};
-
 struct scene {
     camera cam;
     hitable *world;
@@ -486,6 +380,112 @@ scene get_scene(std::string s, std::string texture, float aspect) {
         };
     }
 }
+
+vec3 color(const ray& r, const hitable *world, int nb, uint64_t& ray_count, int depth, uint32_t& state) {
+    ++ray_count;
+    hit_record rec;
+    if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec, state)) {
+        ray scattered;
+        vec3 attenuation;
+        vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+        if (depth < nb && rec.mat_ptr->scatter(r, rec, attenuation, scattered, state)) {
+            return emitted + attenuation * color(scattered, world, nb, ray_count, depth + 1, state);
+        } else {
+            return emitted;
+        }
+    } else {
+        return zeros;
+    }
+}
+
+struct ParallelTaskSet : enki::ITaskSet {
+    ParallelTaskSet(int nx, int ny, int ns, int nb, camera& c, hitable *w, uint8_t *i, unsigned int *fb_)
+            : nx(nx), ny(ny), ns(ns), nb(nb), cam(c), world(w), image(i), fb(fb_) {
+        m_SetSize = ny;
+        ray_count = 0;
+        lines_complete = 0;
+    }
+    virtual void ExecuteRange(enki::TaskSetPartition range, uint32_t threadnum) {
+        uint64_t local_ray_count = 0;
+        for (uint32_t j = range.start; j < range.end; ++j) {
+            uint32_t state = (j * 9781) | 1;
+            for (int i = 0; i < nx; ++i) {
+                vec3 col(0.0f, 0.0f, 0.0f);
+
+                for (int s = 0; s < ns; ++s) {
+                    float u = float(i + RandomFloat01(state)) / float(nx);
+                    float v = float(j + RandomFloat01(state)) / float(ny);
+                    ray r = cam.get_ray(u, v, state);
+                     // vec3 p = r.point_at_parameter(2.0f);
+                    col += color(r, world, nb, local_ray_count, 0, state);
+                }
+                col /= float(ns);
+                // gamma correction
+                col = vec3(sqrtf(col[0]), sqrtf(col[1]), sqrtf(col[2]));
+                // [0.0, 1.0] -> [0, 255]
+                int ir = int(255.99f * col[0]);
+                int ig = int(255.99f * col[1]);
+                int ib = int(255.99f * col[2]);
+                // clipping
+                ir = ir > 255 ? 255 : ir;
+                ig = ig > 255 ? 255 : ig;
+                ib = ib > 255 ? 255 : ib;
+
+                int index = (ny - 1 - j) * nx + i;
+                int index3 = 3 * index;
+                image[index3 + 0] = ir;
+                image[index3 + 1] = ig;
+                image[index3 + 2] = ib;
+                fb[index] = MFB_RGB(ir, ig, ib);
+            }
+            ++lines_complete;
+            ray_count += local_ray_count;
+            local_ray_count = 0;
+            float progress = double(lines_complete) / double(ny);
+            std::stringstream stream;
+            stream << "[";
+            int pos = BARWIDTH * progress;
+            for (int b = 0; b < BARWIDTH; ++b) {
+                if (b < pos)
+                    stream << "=";
+                else if (b == pos)
+                    stream << ">";
+                else
+                    stream << " ";
+            }
+            stream << "] " << int(progress * 100.0) << " %";
+
+            double elapsed = difftime(time(NULL), TIMER);
+            double remaining = (elapsed / progress) * (1.0 - progress);
+            int ela_mins = elapsed / 60.0;
+            int ela_secs = elapsed - (ela_mins * 60.0);
+            int rem_mins = remaining / 60.0;
+            int rem_secs = remaining - (rem_mins * 60.0);
+            double total = elapsed + remaining;
+            int tot_mins = total / 60.0;
+            int tot_secs = total - (tot_mins * 60.0);
+            if (ela_mins >= 0 && ela_secs >= 0 && rem_mins >= 0 && rem_secs >= 0 && tot_mins >= 0 && tot_secs >= 0) {
+                double mrays_per_sec = double(ray_count) / (1000000.0 * elapsed);
+                stream << " Mrays/s: " << mrays_per_sec
+                    << " - e: " << ela_mins << "m" << ela_secs
+                    << "s - r: " << rem_mins << "m" << rem_secs
+                    << "s - t: " << tot_mins << "m" << tot_secs << "s";
+            }
+            stream << "\r";
+            std::cerr << stream.str();
+            std::cerr.flush();
+        }
+    }
+    const int nx, ny, ns, nb;
+    const camera& cam;
+    const hitable *world;
+    uint8_t *image;
+    unsigned int *fb;
+    std::atomic<uint64_t> ray_count;
+    std::atomic<int> lines_complete;
+    const time_t TIMER = time(NULL);
+    const int BARWIDTH = 70;
+};
 
 static const char USAGE[] =
 R"(Ray Tracing in One Week.
