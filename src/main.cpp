@@ -164,27 +164,6 @@ hitable *cornell_smoke() {
     return new hitable_list(list, i);
 }
 
-hitable *cornell_box() {
-    hitable **list = new hitable*[8];
-
-    material *red = new lambertian(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
-    material *white = new lambertian(new constant_texture(vec3(0.73f, 0.73f, 0.73f)));
-    material *green = new lambertian(new constant_texture(vec3(0.12f, 0.45f, 0.15f)));
-    material *light = new diffuse_light(new constant_texture(vec3(15.0f, 15.0f, 15.0f)));
-
-    int i = 0;
-    list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
-    list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
-    list[i++] = new xz_rect(213, 343, 227, 332, 554, light);
-    list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
-    list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
-    list[i++] = new flip_normals(new xy_rect(0, 555, 0, 555, 555, white));
-    list[i++] = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 165.0f, 165.0f), white), -18.0f), vec3(130.0f, 0.0f, 65.0f));
-    list[i++] = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 330.0f, 165.0f), white), 15.0f), vec3(265.0f, 0.0f, 295.0f));
-
-    return new hitable_list(list, i);
-}
-
 hitable *random_scene() {
     int n = 500;
     hitable **list = new hitable*[n + 1];
@@ -270,6 +249,27 @@ hitable *simple_light() {
     return new hitable_list(list, 4);
 }
 
+hitable *cornell_box() {
+    hitable **list = new hitable*[8];
+
+    material *red = new lambertian(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
+    material *white = new lambertian(new constant_texture(vec3(0.73f, 0.73f, 0.73f)));
+    material *green = new lambertian(new constant_texture(vec3(0.12f, 0.45f, 0.15f)));
+    material *light = new diffuse_light(new constant_texture(vec3(15.0f, 15.0f, 15.0f)));
+
+    int i = 0;
+    list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
+    list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
+    list[i++] = new xz_rect(213, 343, 227, 332, 554, light);
+    list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
+    list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
+    list[i++] = new flip_normals(new xy_rect(0, 555, 0, 555, 555, white));
+    list[i++] = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 165.0f, 165.0f), white), -18.0f), vec3(130.0f, 0.0f, 65.0f));
+    list[i++] = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 330.0f, 165.0f), white), 15.0f), vec3(265.0f, 0.0f, 295.0f));
+
+    return new hitable_list(list, i);
+}
+
 struct scene {
     camera cam;
     hitable *world;
@@ -347,6 +347,18 @@ scene get_scene(std::string s, std::string texture, float aspect) {
                 0.0f, 1.0f),
             world: simple_light()
         };
+    } else if (s == "cornell_box") {
+        vec3 lookfrom(278.0f, 278.0f, -800.0f);
+        vec3 lookat(278.0f, 278.0f, 0.0f);
+        vfov = 40.0f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: cornell_box()
+        };
     } else if (s == "final") {
         vec3 lookfrom(478.0f, 278.0f, -600.0f);
         vec3 lookat(278.0f, 278.0f, 0.0f);
@@ -372,11 +384,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
         return scene {
             cam: cam,
             world: cornell_smoke()
-        };
-    } else if (s == "cornell_box") {
-        return scene {
-            cam: cam,
-            world: cornell_box()
         };
     }
 }
