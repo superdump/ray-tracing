@@ -212,15 +212,6 @@ hitable *cornell_box() {
     return new hitable_list(list, i);
 }
 
-hitable *two_perlin_spheres() {
-    texture *noise = new noise_texture(5.0f);
-    int n = 50;
-    hitable** list = new hitable*[n + 1];
-    list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambertian(noise));
-    list[1] = new sphere(vec3(0, 2, 0), 2, new lambertian(noise));
-    return new hitable_list(list, 2);
-}
-
 hitable *simple_light() {
     texture *pertext = new noise_texture(4.0f);
     hitable **list = new hitable*[4];
@@ -281,6 +272,16 @@ hitable *two_spheres() {
     hitable** list = new hitable*[n + 1];
     list[0] = new sphere(vec3(0, -10, 0), 10, new lambertian(checker));
     list[1] = new sphere(vec3(0, 10, 0), 10, new lambertian(checker));
+    list[2] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
+    return new hitable_list(list, 3);
+}
+
+hitable *two_perlin_spheres() {
+    texture *noise = new noise_texture(5.0f);
+    int n = 50;
+    hitable** list = new hitable*[n + 1];
+    list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambertian(noise));
+    list[1] = new sphere(vec3(0, 2, 0), 2, new lambertian(noise));
     list[2] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
     return new hitable_list(list, 3);
 }
@@ -415,6 +416,18 @@ scene get_scene(std::string s, std::string texture, float aspect) {
                 0.0f, 1.0f),
             world: two_spheres()
         };
+    } else if (s == "two_perlin_spheres") {
+        vec3 lookfrom(13.0f, 2.0f, 3.0f);
+        vec3 lookat(0.0f, 0.0f, 0.0f);
+        vfov = 20.0f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: two_perlin_spheres()
+        };
     } else if (s == "earth") {
         return scene {
             cam: cam,
@@ -450,11 +463,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
         return scene {
             cam: cam,
             world: cornell_box()
-        };
-    } else if (s == "two_perlin_spheres") {
-        return scene {
-            cam: cam,
-            world: two_perlin_spheres()
         };
     } else if (s == "simple_light") {
         return scene {
