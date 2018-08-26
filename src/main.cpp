@@ -64,18 +64,6 @@ hitable *earth(std::string tex) {
     return new hitable_list(list, 1);
 }
 
-hitable *two_spheres() {
-    texture *checker = new checker_texture(
-        new constant_texture(vec3(0.2f, 0.3f, 0.1f)),
-        new constant_texture(vec3(0.9f, 0.9f, 0.9f))
-    );
-    int n = 50;
-    hitable** list = new hitable*[n + 1];
-    list[0] = new sphere(vec3(0, -10, 0), 10, new lambertian(checker));
-    list[1] = new sphere(vec3(0, 10, 0), 10, new lambertian(checker));
-    return new hitable_list(list, 2);
-}
-
 hitable *final(std::string tex) {
     int nb = 20;
     hitable **list = new hitable *[30];
@@ -278,10 +266,23 @@ hitable *random_scene() {
     list[i++] = new sphere(vec3(0.0f, 1.0f, 0.0f), 1.0f, new dielectric(1.5f));
     list[i++] = new sphere(vec3(-4.0f, 1.0f, 0.0f), 1.0f, new lambertian(new constant_texture(vec3(0.4f, 0.2f, 0.1f))));
     list[i++] = new sphere(vec3(4.0f, 1.0f, 0.0f), 1.0f, new metal(vec3(0.7f, 0.6f, 0.5f), 0.0f));
-    list[i++] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.4f, 0.4f, 0.4f))));
+    list[i++] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
 
     // return new hitable_list(list, i);
     return new bvh_node(list, i, 0.0, 1.0);
+}
+
+hitable *two_spheres() {
+    texture *checker = new checker_texture(
+        new constant_texture(vec3(0.2f, 0.3f, 0.1f)),
+        new constant_texture(vec3(0.9f, 0.9f, 0.9f))
+    );
+    int n = 50;
+    hitable** list = new hitable*[n + 1];
+    list[0] = new sphere(vec3(0, -10, 0), 10, new lambertian(checker));
+    list[1] = new sphere(vec3(0, 10, 0), 10, new lambertian(checker));
+    list[2] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
+    return new hitable_list(list, 3);
 }
 
 struct ParallelTaskSet : enki::ITaskSet {
@@ -390,15 +391,34 @@ scene get_scene(std::string s, std::string texture, float aspect) {
                aperture, dist_to_focus,
                0.0f, 1.0f);
 
-    if (s == "earth") {
+    if (s == "random_scene") {
+        vec3 lookfrom(13.0f, 2.0f, 3.0f);
+        vec3 lookat(0.0f, 0.0f, 0.0f);
+        vfov = 20.0f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: random_scene()
+        };
+    } else if (s == "two_spheres") {
+        vec3 lookfrom(13.0f, 2.0f, 3.0f);
+        vec3 lookat(0.0f, 0.0f, 0.0f);
+        vfov = 20.0f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: two_spheres()
+        };
+    } else if (s == "earth") {
         return scene {
             cam: cam,
             world: earth(texture)
-        };
-    } else if (s == "two_spheres") {
-        return scene {
-            cam: cam,
-            world: two_spheres()
         };
     } else if (s == "final") {
         vec3 lookfrom(478.0f, 278.0f, -600.0f);
@@ -440,19 +460,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
         return scene {
             cam: cam,
             world: simple_light()
-        };
-    } else if (s == "random_scene") {
-        vec3 lookfrom(13.0f, 2.0f, 3.0f);
-        vec3 lookat(0.0f, 0.0f, 0.0f);
-        vfov = 20.0f;
-        aperture = 0.1f;
-        return scene {
-            cam: camera(lookfrom, lookat,
-                vec3(0.0f, 1.0f, 0.0f),
-                vfov, aspect,
-                aperture, dist_to_focus,
-                0.0f, 1.0f),
-            world: random_scene()
         };
     }
 }
