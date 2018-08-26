@@ -40,3 +40,4 @@ install_data('data/world.topo.bathy.200412.3x5400x2700.jpg',
 
 executable('pi', 'src/pi.cpp', install: true)
 executable('integration', 'src/integration.cpp', install: true)
+executable('integration-2d-sphere', 'src/integration-2d-sphere.cpp', install: true)
