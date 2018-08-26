@@ -350,7 +350,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
     } else if (s == "cornell_box") {
         vec3 lookfrom(278.0f, 278.0f, -800.0f);
         vec3 lookat(278.0f, 278.0f, 0.0f);
-        vfov = 40.0f;
         return scene {
             cam: camera(lookfrom, lookat,
                 vec3(0.0f, 1.0f, 0.0f),
@@ -362,7 +361,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
     } else if (s == "cornell_smoke") {
         vec3 lookfrom(278.0f, 278.0f, -800.0f);
         vec3 lookat(278.0f, 278.0f, 0.0f);
-        vfov = 40.0f;
         return scene {
             cam: camera(lookfrom, lookat,
                 vec3(0.0f, 1.0f, 0.0f),
@@ -374,7 +372,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
     } else if (s == "cornell_balls") {
         vec3 lookfrom(278.0f, 278.0f, -800.0f);
         vec3 lookat(278.0f, 278.0f, 0.0f);
-        vfov = 40.0f;
         return scene {
             cam: camera(lookfrom, lookat,
                 vec3(0.0f, 1.0f, 0.0f),
@@ -386,7 +383,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
     } else if (s == "cornell_final") {
         vec3 lookfrom(278.0f, 278.0f, -800.0f);
         vec3 lookat(278.0f, 278.0f, 0.0f);
-        vfov = 40.0f;
         return scene {
             cam: camera(lookfrom, lookat,
                 vec3(0.0f, 1.0f, 0.0f),
@@ -414,10 +410,15 @@ vec3 color(const ray& r, const hitable *world, int nb, uint64_t& ray_count, int 
     hit_record rec;
     if (world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec, state)) {
         ray scattered;
-        vec3 attenuation;
+        vec3 albedo;
         vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-        if (depth < nb && rec.mat_ptr->scatter(r, rec, attenuation, scattered, state)) {
-            return emitted + attenuation * color(scattered, world, nb, ray_count, depth + 1, state);
+        float pdf;
+        if (depth < nb && rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf, state)) {
+            return emitted
+                + albedo
+                    * rec.mat_ptr->scattering_pdf(r, rec, scattered)
+                    * color(scattered, world, nb, ray_count, depth + 1, state)
+                    / pdf;
         } else {
             return emitted;
         }
