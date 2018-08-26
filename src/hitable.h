@@ -30,6 +30,8 @@ public:
                      hit_record& rec,
                      uint32_t& state) const = 0;
     virtual bool bounding_box(float t0, float t1, aabb& box) const = 0;
+    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const { return 0.0f; }
+    virtual vec3 random(const vec3& o, uint32_t& state) const { return vec3(1.0f, 0.0f, 0.0f); }
 };
 
 class flip_normals : public hitable {

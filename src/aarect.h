@@ -52,6 +52,26 @@ public:
         box = aabb(vec3(x0, k - 0.0001f, z0), vec3(x1, k + 0.0001f, z1));
         return true;
     }
+    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const {
+        hit_record rec;
+        if (this->hit(ray(o, v), 0.001f, std::numeric_limits<float>::max(), rec, state)) {
+            float area = (x1 - x0) * (z1 - z0);
+            float v_squared_length = v.squared_length();
+            float distance_squared = rec.t * rec.t * v_squared_length;
+            float cosine = fabs(dot(v, rec.normal) / sqrtf(v_squared_length));
+            return distance_squared / (cosine * area);
+        } else {
+            return 0.0f;
+        }
+    }
+    virtual vec3 random(const vec3& o, uint32_t& state) const {
+        vec3 random_point = vec3(
+            x0 + RandomFloat01(state) * (x1 - x0),
+            k,
+            z0 + RandomFloat01(state) * (z1 - z0)
+        );
+        return random_point - o;
+    }
 
     material *mat_ptr;
     float x0, x1, z0, z1, k;

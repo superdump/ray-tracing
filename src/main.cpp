@@ -412,13 +412,19 @@ vec3 color(const ray& r, const hitable *world, int nb, uint64_t& ray_count, int 
         ray scattered;
         vec3 albedo;
         vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-        float pdf;
-        if (depth < nb && rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf, state)) {
+        float pdf_val;
+        if (depth < nb && rec.mat_ptr->scatter(r, rec, albedo, scattered, pdf_val, state)) {
+            hitable *light_shape = new xz_rect(213, 343, 227, 332, 554, 0);
+            hitable_pdf p0(light_shape, rec.p);
+            cosine_pdf p1(rec.normal);
+            mixture_pdf p(&p0, &p1);
+            scattered = ray(rec.p, p.generate(state), r.time());
+            pdf_val = p.value(scattered.direction());
             return emitted
                 + albedo
                     * rec.mat_ptr->scattering_pdf(r, rec, scattered)
                     * color(scattered, world, nb, ray_count, depth + 1, state)
-                    / pdf;
+                    / pdf_val;
         } else {
             return emitted;
         }
