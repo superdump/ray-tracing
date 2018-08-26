@@ -54,16 +54,6 @@ vec3 color(const ray& r, const hitable *world, int nb, uint64_t& ray_count, int 
     }
 }
 
-hitable *earth(std::string tex) {
-    int nx, ny, nn;
-    unsigned char *tex_data = stbi_load(tex.c_str(), &nx, &ny, &nn, 0);
-    material *mat = new lambertian(new image_texture(tex_data, nx, ny));
-    int n = 50;
-    hitable** list = new hitable*[n + 1];
-    list[0] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, mat);
-    return new hitable_list(list, 1);
-}
-
 hitable *final(std::string tex) {
     int nb = 20;
     hitable **list = new hitable *[30];
@@ -286,6 +276,17 @@ hitable *two_perlin_spheres() {
     return new hitable_list(list, 3);
 }
 
+hitable *earth(std::string tex) {
+    int nx, ny, nn;
+    unsigned char *tex_data = stbi_load(tex.c_str(), &nx, &ny, &nn, 0);
+    material *mat = new lambertian(new image_texture(tex_data, nx, ny));
+    int n = 50;
+    hitable** list = new hitable*[n + 1];
+    list[0] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, mat);
+    list[1] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.5f, 0.5f))));
+    return new hitable_list(list, 2);
+}
+
 struct ParallelTaskSet : enki::ITaskSet {
     ParallelTaskSet(int nx, int ny, int ns, int nb, camera& c, hitable *w, uint8_t *i, unsigned int *fb_)
             : nx(nx), ny(ny), ns(ns), nb(nb), cam(c), world(w), image(i), fb(fb_) {
@@ -429,8 +430,15 @@ scene get_scene(std::string s, std::string texture, float aspect) {
             world: two_perlin_spheres()
         };
     } else if (s == "earth") {
+        vec3 lookfrom(0.0f, 0.0f, 15.0f);
+        vec3 lookat(0.0f, 0.0f, 0.0f);
+        vfov = 20.0f;
         return scene {
-            cam: cam,
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
             world: earth(texture)
         };
     } else if (s == "final") {
