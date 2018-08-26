@@ -37,3 +37,5 @@ executable('rtiow', rtiow_sources,
     install: true)
 install_data('data/world.topo.bathy.200412.3x5400x2700.jpg',
     install_dir : join_paths(get_option('datadir'), 'rtiow'))
+
+executable('pi', 'src/pi.cpp', install: true)
