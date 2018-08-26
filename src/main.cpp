@@ -141,29 +141,6 @@ hitable *cornell_balls() {
     return new hitable_list(list,i);
 }
 
-hitable *cornell_smoke() {
-    hitable **list = new hitable*[8];
-
-    material *red = new lambertian(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
-    material *white = new lambertian(new constant_texture(vec3(0.73f, 0.73f, 0.73f)));
-    material *green = new lambertian(new constant_texture(vec3(0.12f, 0.45f, 0.15f)));
-    material *light = new diffuse_light(new constant_texture(vec3(7.0f, 7.0f, 7.0f)));
-
-    int i = 0;
-    list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
-    list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
-    list[i++] = new xz_rect(113, 443, 127, 432, 554, light);
-    list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
-    list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
-    list[i++] = new flip_normals(new xy_rect(0, 555, 0, 555, 555, white));
-    hitable *b1 = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 165.0f, 165.0f), white), -18.0f), vec3(130.0f, 0.0f, 65.0f));
-    hitable *b2 = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 330.0f, 165.0f), white), 15.0f), vec3(265.0f, 0.0f, 295.0f));
-    list[i++] = new constant_medium(b1, 0.01f, new constant_texture(vec3(1.0f, 1.0f, 1.0f)));
-    list[i++] = new constant_medium(b2, 0.01f, new constant_texture(vec3(0.0f, 0.0f, 0.0f)));
-
-    return new hitable_list(list, i);
-}
-
 hitable *random_scene() {
     int n = 500;
     hitable **list = new hitable*[n + 1];
@@ -270,6 +247,29 @@ hitable *cornell_box() {
     return new hitable_list(list, i);
 }
 
+hitable *cornell_smoke() {
+    hitable **list = new hitable*[8];
+
+    material *red = new lambertian(new constant_texture(vec3(0.65f, 0.05f, 0.05f)));
+    material *white = new lambertian(new constant_texture(vec3(0.73f, 0.73f, 0.73f)));
+    material *green = new lambertian(new constant_texture(vec3(0.12f, 0.45f, 0.15f)));
+    material *light = new diffuse_light(new constant_texture(vec3(7.0f, 7.0f, 7.0f)));
+
+    int i = 0;
+    list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
+    list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
+    list[i++] = new xz_rect(113, 443, 127, 432, 554, light);
+    list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
+    list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
+    list[i++] = new flip_normals(new xy_rect(0, 555, 0, 555, 555, white));
+    hitable *b1 = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 165.0f, 165.0f), white), -18.0f), vec3(130.0f, 0.0f, 65.0f));
+    hitable *b2 = new translate(new rotate_y(new box(vec3(0.0f, 0.0f, 0.0f), vec3(165.0f, 330.0f, 165.0f), white), 15.0f), vec3(265.0f, 0.0f, 295.0f));
+    list[i++] = new constant_medium(b1, 0.01f, new constant_texture(vec3(1.0f, 1.0f, 1.0f)));
+    list[i++] = new constant_medium(b2, 0.01f, new constant_texture(vec3(0.0f, 0.0f, 0.0f)));
+
+    return new hitable_list(list, i);
+}
+
 struct scene {
     camera cam;
     hitable *world;
@@ -359,6 +359,18 @@ scene get_scene(std::string s, std::string texture, float aspect) {
                 0.0f, 1.0f),
             world: cornell_box()
         };
+    } else if (s == "cornell_smoke") {
+        vec3 lookfrom(278.0f, 278.0f, -800.0f);
+        vec3 lookat(278.0f, 278.0f, 0.0f);
+        vfov = 40.0f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: cornell_smoke()
+        };
     } else if (s == "final") {
         vec3 lookfrom(478.0f, 278.0f, -600.0f);
         vec3 lookat(278.0f, 278.0f, 0.0f);
@@ -379,11 +391,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
         return scene {
             cam: cam,
             world: cornell_balls()
-        };
-    } else if (s == "cornell_smoke") {
-        return scene {
-            cam: cam,
-            world: cornell_smoke()
         };
     }
 }
