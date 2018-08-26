@@ -278,6 +278,7 @@ hitable *random_scene() {
     list[i++] = new sphere(vec3(0.0f, 1.0f, 0.0f), 1.0f, new dielectric(1.5f));
     list[i++] = new sphere(vec3(-4.0f, 1.0f, 0.0f), 1.0f, new lambertian(new constant_texture(vec3(0.4f, 0.2f, 0.1f))));
     list[i++] = new sphere(vec3(4.0f, 1.0f, 0.0f), 1.0f, new metal(vec3(0.7f, 0.6f, 0.5f), 0.0f));
+    list[i++] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.4f, 0.4f, 0.4f))));
 
     // return new hitable_list(list, i);
     return new bvh_node(list, i, 0.0, 1.0);
@@ -372,27 +373,87 @@ struct ParallelTaskSet : enki::ITaskSet {
     const int BARWIDTH = 70;
 };
 
-hitable *get_scene(std::string scene, std::string texture) {
-    if (scene == "earth") {
-        return earth(texture);
-    } else if (scene == "two_spheres") {
-        return two_spheres();
-    } else if (scene == "final") {
-        return final(texture);
-    } else if (scene == "cornell_final") {
-        return cornell_final(texture);
-    } else if (scene == "cornell_balls") {
-        return cornell_balls();
-    } else if (scene == "cornell_smoke") {
-        return cornell_smoke();
-    } else if (scene == "cornell_box") {
-        return cornell_box();
-    } else if (scene == "two_perlin_spheres") {
-        return two_perlin_spheres();
-    } else if (scene == "simple_light") {
-        return simple_light();
-    } else if (scene == "random_scene") {
-        return random_scene();
+struct scene {
+    camera cam;
+    hitable *world;
+};
+
+scene get_scene(std::string s, std::string texture, float aspect) {
+    vec3 lookfrom(478.0f, 278.0f, -600.0f);
+    vec3 lookat(278.0f, 278.0f, 0.0f);
+    float dist_to_focus = 10.0f;
+    float aperture = 0.0f;
+    float vfov = 40.0f;
+    camera cam(lookfrom, lookat,
+               vec3(0.0f, 1.0f, 0.0f),
+               vfov, aspect,
+               aperture, dist_to_focus,
+               0.0f, 1.0f);
+
+    if (s == "earth") {
+        return scene {
+            cam: cam,
+            world: earth(texture)
+        };
+    } else if (s == "two_spheres") {
+        return scene {
+            cam: cam,
+            world: two_spheres()
+        };
+    } else if (s == "final") {
+        vec3 lookfrom(478.0f, 278.0f, -600.0f);
+        vec3 lookat(278.0f, 278.0f, 0.0f);
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: final(texture)
+        };
+    } else if (s == "cornell_final") {
+        return scene {
+            cam: cam,
+            world: cornell_final(texture)
+        };
+    } else if (s == "cornell_balls") {
+        return scene {
+            cam: cam,
+            world: cornell_balls()
+        };
+    } else if (s == "cornell_smoke") {
+        return scene {
+            cam: cam,
+            world: cornell_smoke()
+        };
+    } else if (s == "cornell_box") {
+        return scene {
+            cam: cam,
+            world: cornell_box()
+        };
+    } else if (s == "two_perlin_spheres") {
+        return scene {
+            cam: cam,
+            world: two_perlin_spheres()
+        };
+    } else if (s == "simple_light") {
+        return scene {
+            cam: cam,
+            world: simple_light()
+        };
+    } else if (s == "random_scene") {
+        vec3 lookfrom(13.0f, 2.0f, 3.0f);
+        vec3 lookat(0.0f, 0.0f, 0.0f);
+        vfov = 20.0f;
+        aperture = 0.1f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: random_scene()
+        };
     }
 }
 
@@ -441,26 +502,15 @@ int main(int argc, const char** argv)
         std::cerr << "ERROR: Failed to open minifb window.\n";
     }
 
-    auto scene = args["--scene"].asString();
+    auto selected_scene = args["--scene"].asString();
     auto texture = args["--texture"].asString();
-    hitable *world = get_scene(scene, texture);
+    scene scene = get_scene(selected_scene, texture, float(nx) / float(ny));
 
-    vec3 lookfrom(478.0f, 278.0f, -600.0f);
-    vec3 lookat(278.0f, 278.0f, 0.0f);
-    float dist_to_focus = 10.0f;
-    float aperture = 0.0f;
-    float vfov = 40.0f;
-    camera cam(lookfrom, lookat,
-               vec3(0.0f, 1.0f, 0.0f),
-               vfov, float(nx) / float(ny),
-               aperture, dist_to_focus,
-               0.0f, 1.0f);
-
-    std::cerr << "Rendering '" << scene << "' scene at " << nx << "x" << ny
+    std::cerr << "Rendering '" << selected_scene << "' scene at " << nx << "x" << ny
         << " with " << ns << " rays/px and up to " << nb << " bounces\n";
     std::cerr << "Using " << enki::GetNumHardwareThreads() << " threads\n";
     g_TS.Initialize();
-    ParallelTaskSet task(nx, ny, ns, nb, cam, world, image, fb);
+    ParallelTaskSet task(nx, ny, ns, nb, scene.cam, scene.world, image, fb);
     g_TS.AddTaskSetToPipe(&task);
     while (!task.GetIsComplete() && mfb_update(fb) != -1) {
         std::this_thread::sleep_for(100ms);
