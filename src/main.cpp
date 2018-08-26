@@ -202,16 +202,6 @@ hitable *cornell_box() {
     return new hitable_list(list, i);
 }
 
-hitable *simple_light() {
-    texture *pertext = new noise_texture(4.0f);
-    hitable **list = new hitable*[4];
-    list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambertian(pertext));
-    list[1] = new sphere(vec3(0, 2, 0), 2, new lambertian(pertext));
-    list[2] = new sphere(vec3(0, 6, 0), 1, new diffuse_light(new constant_texture(vec3(4,4,4))));
-    list[3] = new xy_rect(3, 5, 1, 3, -2, new diffuse_light(new constant_texture(vec3(4,4,4))));
-    return new hitable_list(list, 4);
-}
-
 hitable *random_scene() {
     int n = 500;
     hitable **list = new hitable*[n + 1];
@@ -285,6 +275,16 @@ hitable *earth(std::string tex) {
     list[0] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2.0f, mat);
     list[1] = new sphere(vec3(0.0f, 0.0f, 0.0f), 2000.0f, new diffuse_light(new constant_texture(vec3(0.5f, 0.7f, 1.0f))));
     return new hitable_list(list, 2);
+}
+
+hitable *simple_light() {
+    texture *pertext = new noise_texture(4.0f);
+    hitable **list = new hitable*[4];
+    list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambertian(pertext));
+    list[1] = new sphere(vec3(0, 2, 0), 2, new lambertian(pertext));
+    list[2] = new sphere(vec3(0, 6, 0), 1, new diffuse_light(new constant_texture(vec3(4,4,4))));
+    list[3] = new xy_rect(3, 5, 1, 3, -2, new diffuse_light(new constant_texture(vec3(4,4,4))));
+    return new hitable_list(list, 4);
 }
 
 struct ParallelTaskSet : enki::ITaskSet {
@@ -441,6 +441,18 @@ scene get_scene(std::string s, std::string texture, float aspect) {
                 0.0f, 1.0f),
             world: earth(texture)
         };
+    } else if (s == "simple_light") {
+        vec3 lookfrom(26.0f, 4.0f, 6.0f);
+        vec3 lookat(0.0f, 0.0f, 0.0f);
+        vfov = 20.0f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: simple_light()
+        };
     } else if (s == "final") {
         vec3 lookfrom(478.0f, 278.0f, -600.0f);
         vec3 lookat(278.0f, 278.0f, 0.0f);
@@ -471,11 +483,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
         return scene {
             cam: cam,
             world: cornell_box()
-        };
-    } else if (s == "simple_light") {
-        return scene {
-            cam: cam,
-            world: simple_light()
         };
     }
 }
