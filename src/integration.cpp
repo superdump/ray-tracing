@@ -1,13 +1,16 @@
+#include <cmath>
 #include <iostream>
 
+inline float pdf(float x) {
+    return 0.5f * x;
+}
+
 int main() {
-    int inside_circle = 0;
-    int inside_circle_stratified = 0;
     int N = 1000000;
-    float sum;
+    float sum = 0.0f;
     for (int i = 0; i < N; ++i) {
-        float x = 2.0f * drand48();
-        sum += x * x;
+        float x = sqrtf(4.0f * drand48());
+        sum += x * x / pdf(x);
     }
-    std::cout << "I = " << 2.0f * sum / N << "\n";
+    std::cout << "I = " << sum / N << "\n";
 }
