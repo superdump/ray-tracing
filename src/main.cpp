@@ -371,6 +371,30 @@ scene get_scene(std::string s, std::string texture, float aspect) {
                 0.0f, 1.0f),
             world: cornell_smoke()
         };
+    } else if (s == "cornell_balls") {
+        vec3 lookfrom(278.0f, 278.0f, -800.0f);
+        vec3 lookat(278.0f, 278.0f, 0.0f);
+        vfov = 40.0f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: cornell_balls()
+        };
+    } else if (s == "cornell_final") {
+        vec3 lookfrom(278.0f, 278.0f, -800.0f);
+        vec3 lookat(278.0f, 278.0f, 0.0f);
+        vfov = 40.0f;
+        return scene {
+            cam: camera(lookfrom, lookat,
+                vec3(0.0f, 1.0f, 0.0f),
+                vfov, aspect,
+                aperture, dist_to_focus,
+                0.0f, 1.0f),
+            world: cornell_final(texture)
+        };
     } else if (s == "final") {
         vec3 lookfrom(478.0f, 278.0f, -600.0f);
         vec3 lookat(278.0f, 278.0f, 0.0f);
@@ -381,16 +405,6 @@ scene get_scene(std::string s, std::string texture, float aspect) {
                 aperture, dist_to_focus,
                 0.0f, 1.0f),
             world: final(texture)
-        };
-    } else if (s == "cornell_final") {
-        return scene {
-            cam: cam,
-            world: cornell_final(texture)
-        };
-    } else if (s == "cornell_balls") {
-        return scene {
-            cam: cam,
-            world: cornell_balls()
         };
     }
 }
