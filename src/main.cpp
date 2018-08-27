@@ -253,7 +253,7 @@ scene cornell_smoke(float aspect) {
     int l = 0;
     list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
     list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
-    list[i++] = new xz_rect(113, 443, 127, 432, 554, light);
+    list[i++] = new flip_normals(new xz_rect(113, 443, 127, 432, 554, light));
     lights[l++] = list[i - 1];
     list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
     list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
@@ -292,7 +292,7 @@ scene cornell_balls(float aspect) {
     material *light = new diffuse_light( new constant_texture(vec3(5, 5, 5)) );
     list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
     list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
-    list[i++] = new xz_rect(113, 443, 127, 432, 554, light);
+    list[i++] = new flip_normals(new xz_rect(113, 443, 127, 432, 554, light));
     lights[l++] = list[i - 1];
     list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
     list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
@@ -336,7 +336,7 @@ scene cornell_final(std::string tex, float aspect) {
     //list[i++] = new sphere(vec3(260, 50, 145), 50,mat);
     list[i++] = new flip_normals(new yz_rect(0, 555, 0, 555, 555, green));
     list[i++] = new yz_rect(0, 555, 0, 555, 0, red);
-    list[i++] = new xz_rect(123, 423, 147, 412, 554, light);
+    list[i++] = new flip_normals(new xz_rect(123, 423, 147, 412, 554, light));
     lights[l++] = list[i - 1];
     list[i++] = new flip_normals(new xz_rect(0, 555, 0, 555, 555, white));
     list[i++] = new xz_rect(0, 555, 0, 555, 0, white);
