@@ -399,7 +399,7 @@ scene final(std::string tex, float aspect) {
     int ll = 0;
     list[l++] = new bvh_node(boxlist, b, 0, 1);
     material *light = new diffuse_light(new constant_texture(vec3(7, 7, 7)));
-    list[l++] = new xz_rect(123, 423, 147, 412, 554, light);
+    list[l++] = new flip_normals(new xz_rect(123, 423, 147, 412, 554, light));
     lights[ll++] = list[l - 1];
     vec3 center(400, 400, 200);
     list[l++] = new moving_sphere(center, center + vec3(30, 0, 0), 0, 1, 50, new lambertian(new constant_texture(vec3(0.7, 0.3, 0.1))));
