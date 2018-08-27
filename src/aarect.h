@@ -12,12 +12,12 @@ public:
     xy_rect(float _x0, float _x1, float _y0, float _y1, float _k, material *mat)
         : mat_ptr(mat), x0(_x0), x1(_x1), y0(_y0), y1(_y1), k(_k) {}
 
-    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb& box) const {
+    bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb& box) const override {
         box = aabb(vec3(x0, y0, k - 0.0001f), vec3(x1, y1, k + 0.0001f));
         return true;
     }
-    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const {
+    float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const override {
         hit_record rec;
         if (this->hit(ray(o, v), 0.001f, std::numeric_limits<float>::max(), rec, state)) {
             float area = (x1 - x0) * (y1 - y0);
@@ -29,7 +29,7 @@ public:
             return 0.0f;
         }
     }
-    virtual vec3 random(const vec3& o, uint32_t& state) const {
+    vec3 random(const vec3& o, uint32_t& state) const override {
         vec3 random_point = vec3(
             x0 + RandomFloat01(state) * (x1 - x0),
             y0 + RandomFloat01(state) * (y1 - y0),
@@ -67,12 +67,12 @@ public:
     xz_rect(float _x0, float _x1, float _z0, float _z1, float _k, material *mat)
         : mat_ptr(mat), x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k) {}
 
-    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb& box) const {
+    bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb& box) const override {
         box = aabb(vec3(x0, k - 0.0001f, z0), vec3(x1, k + 0.0001f, z1));
         return true;
     }
-    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const {
+    float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const override {
         hit_record rec;
         if (this->hit(ray(o, v), 0.001f, std::numeric_limits<float>::max(), rec, state)) {
             float area = (x1 - x0) * (z1 - z0);
@@ -84,7 +84,7 @@ public:
             return 0.0f;
         }
     }
-    virtual vec3 random(const vec3& o, uint32_t& state) const {
+    vec3 random(const vec3& o, uint32_t& state) const override {
         vec3 random_point = vec3(
             x0 + RandomFloat01(state) * (x1 - x0),
             k,
@@ -122,12 +122,12 @@ public:
     yz_rect(float _y0, float _y1, float _z0, float _z1, float _k, material *mat)
         : mat_ptr(mat), y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k) {}
 
-    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb& box) const {
+    bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb& box) const override {
         box = aabb(vec3(k - 0.0001f, y0, z0), vec3(k + 0.0001f, y1, z1));
         return true;
     }
-    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const {
+    float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const override {
         hit_record rec;
         if (this->hit(ray(o, v), 0.001f, std::numeric_limits<float>::max(), rec, state)) {
             float area = (y1 - y0) * (z1 - z0);
@@ -139,7 +139,7 @@ public:
             return 0.0f;
         }
     }
-    virtual vec3 random(const vec3& o, uint32_t& state) const {
+    vec3 random(const vec3& o, uint32_t& state) const override {
         vec3 random_point = vec3(
             k,
             y0 + RandomFloat01(state) * (y1 - y0),

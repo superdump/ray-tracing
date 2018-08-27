@@ -38,7 +38,7 @@ class flip_normals : public hitable {
 public:
     flip_normals(hitable *p) : ptr(p) {}
 
-    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const {
+    bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const override {
         if (ptr->hit(r, t_min, t_max, rec, state)) {
             rec.normal = -rec.normal;
             return true;
@@ -46,8 +46,14 @@ public:
             return false;
         }
     }
-    virtual bool bounding_box(float t0, float t1, aabb& box) const {
+    bool bounding_box(float t0, float t1, aabb& box) const override {
         return ptr->bounding_box(t0, t1, box);
+    }
+    float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const override {
+        return ptr->pdf_value(o, v, state);
+    }
+    vec3 random(const vec3& o, uint32_t& state) const override {
+        return ptr->random(o, state);
     }
 
     hitable *ptr;
@@ -57,8 +63,8 @@ class translate : public hitable {
 public:
     translate(hitable *p, const vec3 &displacement) : ptr(p), offset(displacement) {}
 
-    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb &box) const;
+    bool hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb &box) const override;
 
     hitable *ptr;
     vec3 offset;
@@ -85,10 +91,16 @@ class rotate_y : public hitable {
   public:
     rotate_y(hitable *p, float angle);
 
-    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb &box) const {
+    bool hit(const ray &r, float t_min, float t_max, hit_record &rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb &box) const override {
         box = bbox;
         return hasbox;
+    }
+    float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const override {
+        return ptr->pdf_value(o, v, state);
+    }
+    vec3 random(const vec3& o, uint32_t& state) const override {
+        return ptr->random(o, state);
     }
 
     hitable *ptr;

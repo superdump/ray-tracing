@@ -54,7 +54,8 @@ public:
     }
     virtual float scattering_pdf(const ray& r_in,
                                  const hit_record& rec,
-                                 const ray& scattered) const {
+                                 const ray& scattered,
+                                 uint32_t& state) const {
         return 0.0f;
     }
     virtual vec3 emitted(const ray& r_in, const hit_record& rec, float u, float v, const vec3& p) const {
@@ -66,15 +67,18 @@ class diffuse_light : public material {
 public:
     diffuse_light(texture *a) : emit(a) {}
 
-    virtual bool scatter(const ray& r_in,
-                         const hit_record& rec,
-                         vec3& attenuation,
-                         ray& scattered,
-                         uint32_t& state) const {
+    bool scatter(const ray& r_in,
+                 const hit_record& hrec,
+                 scatter_record& srec,
+                 uint32_t& state) const override {
         return false;
     }
-    virtual vec3 emitted(float u, float v, const vec3& p) const {
-        return emit->value(u, v, p);
+    vec3 emitted(const ray& r_in, const hit_record& rec, float u, float v, const vec3& p) const override {
+        if (dot(rec.normal, r_in.direction()) < 0.0f) {
+            return emit->value(u, v, p);
+        } else {
+            return vec3(0.0f, 0.0f, 0.0f);
+        }
     }
 
     texture *emit;
@@ -84,13 +88,14 @@ class isotropic : public material {
 public:
     isotropic(texture *a) : albedo(a) {}
 
-    virtual bool scatter(const ray &r_in,
-                         const hit_record &rec,
-                         vec3 &attenuation,
-                         ray &scattered,
-                         uint32_t& state) const {
-        scattered = ray(rec.p, random_in_unit_sphere(state));
-        attenuation = albedo->value(rec.u, rec.v, rec.p);
+    bool scatter(const ray& r_in,
+                 const hit_record& hrec,
+                 scatter_record& srec,
+                 uint32_t& state) const override {
+        srec.specular_ray = ray(hrec.p, random_in_unit_sphere(state));
+        srec.is_specular = true;
+        srec.attenuation = albedo->value(hrec.u, hrec.v, hrec.p);
+        srec.pdf_ptr = NULL;
         return true;
     }
 
@@ -101,20 +106,20 @@ class lambertian : public material {
 public:
     lambertian(texture *a) : albedo(a) {}
 
-    virtual float scattering_pdf(const ray& r_in,
-                                 const hit_record& rec,
-                                 ray& scattered,
-                                 uint32_t& state) const {
+    float scattering_pdf(const ray& r_in,
+                         const hit_record& rec,
+                         const ray& scattered,
+                         uint32_t& state) const override {
         float cosine = dot(rec.normal, unit_vector(scattered.direction()));
         if (cosine < 0.0f) {
             cosine = 0.0f;
         }
         return cosine / M_PI;
     }
-    virtual bool scatter(const ray& r_in,
-                         const hit_record& hrec,
-                         scatter_record& srec,
-                         uint32_t& state) const {
+    bool scatter(const ray& r_in,
+                 const hit_record& hrec,
+                 scatter_record& srec,
+                 uint32_t& state) const override {
         srec.is_specular = false;
         srec.attenuation = albedo->value(hrec.u, hrec.v, hrec.p);
         srec.pdf_ptr = new cosine_pdf(hrec.normal);
@@ -134,10 +139,10 @@ public:
         }
     }
 
-    virtual bool scatter(const ray& r_in,
-                         const hit_record& hrec,
-                         scatter_record& srec,
-                         uint32_t& state) const {
+    bool scatter(const ray& r_in,
+                 const hit_record& hrec,
+                 scatter_record& srec,
+                 uint32_t& state) const override {
         vec3 reflected = reflect(unit_vector(r_in.direction()), hrec.normal);
         srec.specular_ray = ray(hrec.p, reflected + fuzz * random_in_unit_sphere(state), r_in.time());
         srec.attenuation = albedo;
@@ -154,35 +159,36 @@ class dielectric : public material {
 public:
     dielectric(float ri) : ref_idx(ri) {}
 
-    virtual bool scatter(const ray& r_in,
-                         const hit_record& rec,
-                         vec3& attenuation,
-                         ray& scattered,
-                         uint32_t& state) const {
+    bool scatter(const ray& r_in,
+                 const hit_record& hrec,
+                 scatter_record& srec,
+                 uint32_t& state) const override {
         vec3 outward_normal;
         float ni_over_nt;
-        attenuation = ones;
+        srec.attenuation = ones;
         vec3 refracted;
         float reflect_prob;
         float cosine;
-        if (dot(r_in.direction(), rec.normal) > 0.0f) {
-            outward_normal = -rec.normal;
+        if (dot(r_in.direction(), hrec.normal) > 0.0f) {
+            outward_normal = -hrec.normal;
             ni_over_nt = ref_idx;
-            cosine = ref_idx + dot(r_in.direction(), rec.normal) / r_in.direction().length();
+            cosine = ref_idx + dot(r_in.direction(), hrec.normal) / r_in.direction().length();
         } else {
-            outward_normal = rec.normal;
+            outward_normal = hrec.normal;
             ni_over_nt = 1.0f / ref_idx;
-            cosine = -dot(r_in.direction(), rec.normal) / r_in.direction().length();
+            cosine = -dot(r_in.direction(), hrec.normal) / r_in.direction().length();
         }
         reflect_prob = refract(r_in.direction(), outward_normal, ni_over_nt, refracted)
             ? schlick(cosine, ref_idx)
             : 1.0f;
         if (RandomFloat01(state) < reflect_prob) {
-            vec3 reflected = reflect(r_in.direction(), rec.normal);
-            scattered = ray(rec.p, reflected, r_in.time());
+            vec3 reflected = reflect(r_in.direction(), hrec.normal);
+            srec.specular_ray = ray(hrec.p, reflected, r_in.time());
         } else {
-            scattered = ray(rec.p, refracted, r_in.time());
+            srec.specular_ray = ray(hrec.p, refracted, r_in.time());
         }
+        srec.is_specular = true;
+        srec.pdf_ptr = NULL;
         return true;
     }
 

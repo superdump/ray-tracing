@@ -8,10 +8,10 @@ public:
     hitable_list() {}
     hitable_list(hitable **l, int n) { list = l; list_size = n; }
 
-    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb &box) const;
-    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const;
-    virtual vec3 random(const vec3& o, uint32_t& state) const;
+    bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb &box) const override;
+    float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const override;
+    vec3 random(const vec3& o, uint32_t& state) const override;
 
     hitable **list;
     int list_size;

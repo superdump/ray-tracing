@@ -16,8 +16,10 @@ public:
                       time0(t0), time1(t1),
                       radius(r), mat_ptr(m) {}
 
-    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb &box) const;
+    bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb &box) const override;
+    float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const override;
+    vec3 random(const vec3& o, uint32_t& state) const override;
     vec3 center(float t) const;
 
     vec3 center0, center1;
@@ -68,6 +70,25 @@ bool moving_sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec,
         }
     }
     return false;
+}
+
+float moving_sphere::pdf_value(const vec3& o, const vec3& v, uint32_t& state) const {
+    hit_record rec;
+    if (this->hit(ray(o, v), 0.001f, std::numeric_limits<float>::max(), rec, state)) {
+        float cos_theta_max = sqrtf(1.0f - radius * radius / (center(0.0f) - o).squared_length());
+        float solid_angle = 2.0f * M_PI * (1.0f - cos_theta_max);
+        return 1.0f / solid_angle;
+    } else {
+        return 0.0f;
+    }
+}
+
+vec3 moving_sphere::random(const vec3& o, uint32_t& state) const {
+    vec3 direction = center(0.0f) - o;
+    float distance_squared = direction.squared_length();
+    onb uvw;
+    uvw.build_from_w(direction);
+    return uvw.local(random_to_sphere(radius, distance_squared, state));
 }
 
 #endif /* MOVINGSPHEREH */

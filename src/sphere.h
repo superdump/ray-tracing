@@ -12,10 +12,10 @@ public:
     sphere() {}
     sphere(vec3 cen, float r, material *m) : center(cen), radius(r), mat_ptr(m) {}
 
-    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb &box) const;
-    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const;
-    virtual vec3 random(const vec3& o, uint32_t& state) const;
+    bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb &box) const override;
+    float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const override;
+    vec3 random(const vec3& o, uint32_t& state) const override;
 
     vec3 center;
     float radius;

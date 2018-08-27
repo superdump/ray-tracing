@@ -483,7 +483,7 @@ vec3 color(const ray& r, const hitable *world, hitable *lights, int nb, uint64_t
                 delete srec.pdf_ptr;
                 return emitted
                     + srec.attenuation
-                        * hrec.mat_ptr->scattering_pdf(r, hrec, scattered)
+                        * hrec.mat_ptr->scattering_pdf(r, hrec, scattered, state)
                         * color(scattered, world, lights, nb, ray_count, depth + 1, state)
                         / pdf_val;
             }

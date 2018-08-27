@@ -13,8 +13,8 @@ public:
     box() {}
     box(const vec3 &p0, const vec3 &p1, material *ptr);
 
-    virtual bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const;
-    virtual bool bounding_box(float t0, float t1, aabb& box) const {
+    bool hit(const ray& r, float t0, float t1, hit_record& rec, uint32_t& state) const override;
+    bool bounding_box(float t0, float t1, aabb& box) const override {
         box = aabb(pmin, pmax);
         return true;
     }
