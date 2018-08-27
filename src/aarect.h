@@ -17,6 +17,26 @@ public:
         box = aabb(vec3(x0, y0, k - 0.0001f), vec3(x1, y1, k + 0.0001f));
         return true;
     }
+    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const {
+        hit_record rec;
+        if (this->hit(ray(o, v), 0.001f, std::numeric_limits<float>::max(), rec, state)) {
+            float area = (x1 - x0) * (y1 - y0);
+            float v_squared_length = v.squared_length();
+            float distance_squared = rec.t * rec.t * v_squared_length;
+            float cosine = fabs(dot(v, rec.normal) / sqrtf(v_squared_length));
+            return distance_squared / (cosine * area);
+        } else {
+            return 0.0f;
+        }
+    }
+    virtual vec3 random(const vec3& o, uint32_t& state) const {
+        vec3 random_point = vec3(
+            x0 + RandomFloat01(state) * (x1 - x0),
+            y0 + RandomFloat01(state) * (y1 - y0),
+            k
+        );
+        return random_point - o;
+    }
 
     material *mat_ptr;
     float x0, x1, y0, y1, k;
@@ -106,6 +126,26 @@ public:
     virtual bool bounding_box(float t0, float t1, aabb& box) const {
         box = aabb(vec3(k - 0.0001f, y0, z0), vec3(k + 0.0001f, y1, z1));
         return true;
+    }
+    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const {
+        hit_record rec;
+        if (this->hit(ray(o, v), 0.001f, std::numeric_limits<float>::max(), rec, state)) {
+            float area = (y1 - y0) * (z1 - z0);
+            float v_squared_length = v.squared_length();
+            float distance_squared = rec.t * rec.t * v_squared_length;
+            float cosine = fabs(dot(v, rec.normal) / sqrtf(v_squared_length));
+            return distance_squared / (cosine * area);
+        } else {
+            return 0.0f;
+        }
+    }
+    virtual vec3 random(const vec3& o, uint32_t& state) const {
+        vec3 random_point = vec3(
+            k,
+            y0 + RandomFloat01(state) * (y1 - y0),
+            z0 + RandomFloat01(state) * (z1 - z0)
+        );
+        return random_point - o;
     }
 
     material *mat_ptr;

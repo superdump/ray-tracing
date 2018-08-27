@@ -37,13 +37,18 @@ vec3 random_in_unit_sphere(uint32_t& state) {
     return p;
 }
 
+struct scatter_record {
+    ray specular_ray;
+    bool is_specular;
+    vec3 attenuation;
+    pdf *pdf_ptr;
+};
+
 class material {
 public:
     virtual bool scatter(const ray& r_in,
-                         const hit_record& rec,
-                         vec3& albedo,
-                         ray& scattered,
-                         float& pdf,
+                         const hit_record& hrec,
+                         scatter_record& srec,
                          uint32_t& state) const {
         return false;
     }
@@ -52,7 +57,7 @@ public:
                                  const ray& scattered) const {
         return 0.0f;
     }
-    virtual vec3 emitted(float u, float v, const vec3& p) const {
+    virtual vec3 emitted(const ray& r_in, const hit_record& rec, float u, float v, const vec3& p) const {
         return vec3(0.0f, 0.0f, 0.0f);
     }
 };
@@ -107,17 +112,12 @@ public:
         return cosine / M_PI;
     }
     virtual bool scatter(const ray& r_in,
-                         const hit_record& rec,
-                         vec3& alb,
-                         ray& scattered,
-                         float& pdf,
+                         const hit_record& hrec,
+                         scatter_record& srec,
                          uint32_t& state) const {
-        onb uvw;
-        uvw.build_from_w(rec.normal);
-        vec3 direction = uvw.local(random_cosine_direction(state));
-        scattered = ray(rec.p, unit_vector(direction), r_in.time());
-        alb = albedo->value(rec.u, rec.v, rec.p);
-        pdf = dot(uvw.w(), scattered.direction()) / M_PI;
+        srec.is_specular = false;
+        srec.attenuation = albedo->value(hrec.u, hrec.v, hrec.p);
+        srec.pdf_ptr = new cosine_pdf(hrec.normal);
         return true;
     }
 
@@ -135,14 +135,15 @@ public:
     }
 
     virtual bool scatter(const ray& r_in,
-                         const hit_record& rec,
-                         vec3& attenuation,
-                         ray& scattered,
+                         const hit_record& hrec,
+                         scatter_record& srec,
                          uint32_t& state) const {
-        vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-        scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere(state), r_in.time());
-        attenuation = albedo;
-        return dot(scattered.direction(), rec.normal) > 0.0f;
+        vec3 reflected = reflect(unit_vector(r_in.direction()), hrec.normal);
+        srec.specular_ray = ray(hrec.p, reflected + fuzz * random_in_unit_sphere(state), r_in.time());
+        srec.attenuation = albedo;
+        srec.is_specular = true;
+        srec.pdf_ptr = NULL;
+        return true;
     }
 
     vec3 albedo;

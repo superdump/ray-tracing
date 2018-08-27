@@ -10,6 +10,8 @@ public:
 
     virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec, uint32_t& state) const;
     virtual bool bounding_box(float t0, float t1, aabb &box) const;
+    virtual float pdf_value(const vec3& o, const vec3& v, uint32_t& state) const;
+    virtual vec3 random(const vec3& o, uint32_t& state) const;
 
     hitable **list;
     int list_size;
@@ -47,6 +49,20 @@ bool hitable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec, 
         }
     }
     return hit_anything;
+}
+
+float hitable_list::pdf_value(const vec3& o, const vec3& v, uint32_t& state) const {
+    float weight = 1.0f / list_size;
+    float sum = 0.0f;
+    for (int i = 0; i < list_size; ++i) {
+        sum += weight * list[i]->pdf_value(o, v, state);
+    }
+    return sum;
+}
+
+vec3 hitable_list::random(const vec3& o, uint32_t& state) const {
+    int index = int(RandomFloat01(state) * list_size);
+    return list[index]->random(o, state);
 }
 
 #endif /* HITABLELISTH */
